@@ -1,0 +1,15 @@
+# environment variables
+.env
+
+# dependencies
+node_modules/
+
+# cache and log
+__pycache__/
+*.pyc
+*.log
+npm-debug.log*
+.DS_Store
+build/
+dist/
+
