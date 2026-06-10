@@ -1,8 +1,9 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 
-router.get('/health', (req, res) => {
-  res.json({ status: 'ok', service: 'backend' });
-});
+const upload = require("../middleware/upload_audio_file");
+const { transcribeAudio } = require("../controller/session_start_audio");
+
+router.post("/transcribe", upload.single("audio"), transcribeAudio);
 
 module.exports = router;
