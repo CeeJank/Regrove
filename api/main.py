@@ -1,5 +1,6 @@
 import os
 import tempfile
+import uuid
 
 from faster_whisper import WhisperModel
 from flask import Flask, jsonify, request
@@ -39,8 +40,13 @@ def processRecording():
     if not recording.filename or not recording.filename.endswith(".mp4"):
         return jsonify({"Error": "Recording not .mp4"}), 400
 
+    # uuid to generate tag for >1 requests, so the same file doesn't get overwritten
+    md_path = f"{uuid.uuid4()}.md"
+
     # Temp file to store the recording because faster-whisper works under FFmpeg(C code) so it needs a real path
-    with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as tmp:
+    with tempfile.NamedTemporaryFile(
+        suffix=".mp4", delete=False
+    ) as tmp:  # don't delete the file after closing
         recording.save(tmp)
         tmp_path = tmp.name
     try:
@@ -49,14 +55,19 @@ def processRecording():
         print("Recording is now being processed")
 
         # create the md file for transcript
-        with open("transcription.md", "w") as f:
+        with open(md_path, "w") as f:
             for segment in segments:
                 f.write(f"[{segment.start}s] {segment.text}\n")
 
     finally:
         os.unlink(tmp_path)
 
-    return jsonify({"file": "transcription.md"})
+    with open(md_path, "r") as f:
+        content = f.read()
+
+    os.unlink(md_path)
+
+    return jsonify({"transcription": content})
 
 
 if __name__ == "__main__":
