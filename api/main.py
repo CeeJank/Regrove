@@ -1,12 +1,63 @@
-from flask import Flask, request, jsonify
+import os
+import tempfile
+
+from faster_whisper import WhisperModel
+from flask import Flask, jsonify, request
 
 app = Flask(__name__)
 
+# choose model
+model_size = "large-v2"
 
-@app.route('/health', methods=['GET'])
+# Run on NVIDIA GPU
+model = WhisperModel(model_size, device="cuda", compute_type="float16")
+
+# For running on CPU
+# model = WhisperModel(model_size, device="cpu", compute_type="int8")
+
+
+@app.route("/health", methods=["GET"])
 def health():
-    return jsonify({'status': 'ok', 'service': 'python-api'})
+    return jsonify({"status": "ok", "service": "python-api"})
 
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000, debug=False)
+# temp endpoint for receiving from express
+@app.route("/recording", methods=["POST"])
+def processRecording():
+    # To receive the recording, JSON objects cannot be used because they only store text
+    # FormData() is to be used on expressjs side
+    # fetch(`${process.env.PYTHON_API_URL}/recording`, {
+    # method: 'POST',
+    # body: formData
+    # })
+    recording = request.files.get("recording")
+
+    if recording is None:
+        return jsonify({"Error": "no recording received!!"}), 400
+
+    # Check for not .mp4
+    if not recording.filename or not recording.filename.endswith(".mp4"):
+        return jsonify({"Error": "Recording not .mp4"}), 400
+
+    # Temp file to store the recording because faster-whisper works under FFmpeg(C code) so it needs a real path
+    with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as tmp:
+        recording.save(tmp)
+        tmp_path = tmp.name
+    try:
+        segments, info = model.transcribe(tmp_path, beam_size=5)
+
+        print("Recording is now being processed")
+
+        # create the md file for transcript
+        with open("transcription.md", "w") as f:
+            for segment in segments:
+                f.write(f"[{segment.start}s] {segment.text}\n")
+
+    finally:
+        os.unlink(tmp_path)
+
+    return jsonify({"file": "transcription.md"})
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=8000, debug=False)
