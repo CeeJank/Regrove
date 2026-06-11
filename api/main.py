@@ -58,15 +58,17 @@ def processRecording():
         with open(md_path, "w") as f:
             for segment in segments:
                 f.write(f"[{segment.start}s] {segment.text}\n")
-
+    # unlink the file
     finally:
         os.unlink(tmp_path)
 
+    # read the file to transmit
     with open(md_path, "r") as f:
         content = f.read()
 
     os.unlink(md_path)
 
+    # contents of transcript in object for res
     return jsonify({"transcription": content})
 
 
