@@ -26,7 +26,6 @@ exports.transcribeAudio = async (req, res) => {
     return res.json({
       transcript: response.data.text,
     });
-
   } catch (error) {
     console.error(error);
 
