@@ -53,15 +53,18 @@ export default function DashboardPage() {
         </p>
 
         <nav className="nav-links" style={{ marginBottom: 18 }}>
-          <Link to="/" className="secondary-btn">Back home</Link>
-          <Link to="/recording" className="primary-btn">Open recording</Link>
+          <Link to="/" className="secondary-btn">
+            Back home
+          </Link>
         </nav>
 
         {loading && <p className="status">Loading mock data…</p>}
         {error && <p className="error-box">{error}</p>}
 
         {!loading && !error && items.length === 0 && (
-          <p className="status">No child records were returned for this worker.</p>
+          <p className="status">
+            No child records were returned for this worker.
+          </p>
         )}
 
         <div className="result-box">
