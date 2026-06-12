@@ -1,0 +1,96 @@
+.page-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 32px;
+}
+
+.card {
+  width: 100%;
+  max-width: 760px;
+  padding: 32px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--bg);
+  box-shadow: var(--shadow);
+  text-align: left;
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.85rem;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.lead {
+  color: var(--text);
+  margin-bottom: 24px;
+}
+
+.nav-links {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.button-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.primary-btn,
+.secondary-btn {
+  border-radius: 10px;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.primary-btn {
+  background: var(--accent);
+  color: white;
+  border-color: transparent;
+}
+
+.secondary-btn {
+  background: var(--accent-bg);
+  color: var(--text-h);
+}
+
+.primary-btn:disabled,
+.secondary-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.status,
+.error-box {
+  margin-bottom: 12px;
+}
+
+.error-box {
+  color: #b91c1c;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.result-box {
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+}
+
+.result-box p {
+  color: var(--text-h);
+  line-height: 1.5;
+}
