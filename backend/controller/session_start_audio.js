@@ -9,28 +9,29 @@ exports.transcribeAudio = async (req, res) => {
       });
     }
 
-    const formData = new FormData();
+    const pythonApiUrl = process.env.PYTHON_API_URL || "http://localhost:8000";
 
+    const formData = new FormData();
     formData.append("audio", req.file.buffer, {
-      filename: "audio.webm",
+      filename: req.file.originalname || "audio.webm",
+      contentType: req.file.mimetype || "audio/webm",
     });
 
-    const response = await axios.post(
-      "http://localhost:8000/transcribe",
-      formData,
-      {
-        headers: formData.getHeaders(),
-      },
-    );
+    const response = await axios.post(`${pythonApiUrl}/transcribe`, formData, {
+      headers: formData.getHeaders(),
+    });
 
     return res.json({
       transcript: response.data.text,
+      language: response.data.language,
+      duration: response.data.duration,
     });
   } catch (error) {
-    console.error(error);
+    console.error("Transcription controller error:", error.message);
 
     return res.status(500).json({
       message: "Internal Server error",
+      error: error.message,
     });
   }
 };

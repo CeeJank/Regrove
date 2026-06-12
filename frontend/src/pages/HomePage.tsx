@@ -12,9 +12,6 @@ export default function HomePage() {
         </p>
 
         <nav className="nav-links">
-          <Link to="/recording" className="primary-btn">
-            Go to recording
-          </Link>
           <Link to="/dashboard" className="secondary-btn">
             Open dashboard mock view
           </Link>

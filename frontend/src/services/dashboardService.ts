@@ -1,9 +1,9 @@
 const API_BASE = "http://localhost:5000/api";
 
-export async function fetchRecentChildren(workerId: number) {
-  const token = localStorage.getItem("workerToken") || "dev-worker-1";
+export async function fetchRecentChildren() {
+  const token = localStorage.getItem("workerToken");
 
-  const response = await fetch(`${API_BASE}/workers/${workerId}/children/recent`, {
+  const response = await fetch(`${API_BASE}/workers/children/recent`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },

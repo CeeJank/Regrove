@@ -1,16 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import ChildList from "../components/children/ChildList";
+import type { ChildProfileItem } from "../components/children/ChildCard";
 import { fetchRecentChildren } from "../services/dashboardService";
-
-interface ChildProfileItem {
-  childId: number;
-  workerId: number;
-  name: string;
-  age: number;
-  riskLevel: string;
-  lastSessionDate: string;
-  status: string;
-}
 
 export default function DashboardPage() {
   const [items, setItems] = useState<ChildProfileItem[]>([]);
@@ -20,7 +12,7 @@ export default function DashboardPage() {
   useEffect(() => {
     let isMounted = true;
 
-    fetchRecentChildren(1)
+    fetchRecentChildren()
       .then((data) => {
         if (isMounted) {
           setItems(data.items || []);
@@ -67,28 +59,7 @@ export default function DashboardPage() {
           </p>
         )}
 
-        <div className="result-box">
-          {items.map((item) => (
-            <article
-              key={item.childId}
-              style={{
-                border: "1px solid var(--border)",
-                borderRadius: 14,
-                padding: 14,
-                marginBottom: 12,
-                background: "var(--accent-bg)",
-              }}
-            >
-              <h2 style={{ margin: "0 0 4px" }}>{item.name}</h2>
-              <p style={{ margin: "0 0 8px", color: "var(--text-h)" }}>
-                Age {item.age} • Risk {item.riskLevel} • Status {item.status}
-              </p>
-              <p style={{ margin: 0, color: "var(--text-h)" }}>
-                Last session: {item.lastSessionDate}
-              </p>
-            </article>
-          ))}
-        </div>
+        <ChildList children={items} />
       </section>
     </main>
   );
