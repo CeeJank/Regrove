@@ -1,5 +1,4 @@
 import os
-<<<<<<< HEAD
 import tempfile
 import uuid
 
@@ -10,39 +9,6 @@ app = Flask(__name__)
 
 # choose model
 model_size = "large-v2"
-=======
-import uuid
-
-from flask import Flask, jsonify, request
-from faster_whisper import WhisperModel
-
-app = Flask(__name__)
-
-model = WhisperModel("small", device="cpu", compute_type="int8")
-
-@app.route('/transcribe', methods=['POST'])
-def transcribe():
-    if 'audio' not in request.files:
-        return jsonify({'error': 'No audio file provided'}), 400
-
-    file = request.files['audio']
-    temp_path = f"{uuid.uuid4()}.webm"
-    file.save(temp_path)
-
-    try:
-        segments, info = model.transcribe(temp_path, language="en")
-        text = " ".join([seg.text for seg in segments])
-
-        return jsonify({
-            'text': text,
-            'language': info.language,
-            'duration': info.duration
-        })
-    finally:
-        if os.path.exists(temp_path):
-            os.remove(temp_path)
-
->>>>>>> session-management
 
 # Run on NVIDIA GPU
 model = WhisperModel(model_size, device="cuda", compute_type="float16")
