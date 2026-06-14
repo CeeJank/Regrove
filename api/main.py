@@ -1,40 +1,70 @@
 import os
+import tempfile
 import uuid
 
-from flask import Flask, jsonify, request
 from faster_whisper import WhisperModel
+from flask import Flask, jsonify, request
 
 app = Flask(__name__)
 
-model = WhisperModel("small", device="cpu", compute_type="int8")
+# choose model
+model_size = "large-v2"
 
-@app.route('/transcribe', methods=['POST'])
-def transcribe():
-    if 'audio' not in request.files:
-        return jsonify({'error': 'No audio file provided'}), 400
+# Run on NVIDIA GPU
+model = WhisperModel(model_size, device="cuda", compute_type="float16")
 
-    file = request.files['audio']
-    temp_path = f"{uuid.uuid4()}.webm"
-    file.save(temp_path)
+# For running on CPU
+# model = WhisperModel(model_size, device="cpu", compute_type="int8")
 
+# temp endpoint for receiving from express
+@app.route("/transcribe", methods=["POST"])
+def processRecording():
+    # To receive the recording, JSON objects cannot be used because they only store text
+    # FormData() is to be used on expressjs side
+    # fetch(`${process.env.PYTHON_API_URL}/recording`, {
+    # method: 'POST',
+    # body: formData
+    # })
+    recording = request.files.get("audio")
+
+    if recording is None:
+        return jsonify({"Error": "no recording received!!"}), 400
+
+    # Check for not .mp4
+    if not recording.filename or not recording.filename.endswith(".mp4"):
+        return jsonify({"Error": "Recording not .mp4"}), 400
+
+    # uuid to generate tag for >1 requests, so the same file doesn't get overwritten
+    md_path = f"{uuid.uuid4()}.md"
+
+    # Temp file to store the recording because faster-whisper works under FFmpeg(C code) so it needs a real path
+    with tempfile.NamedTemporaryFile(
+        suffix=".mp4", delete=False
+    ) as tmp:  # don't delete the file after closing
+        recording.save(tmp)
+        tmp_path = tmp.name
     try:
-        segments, info = model.transcribe(temp_path, language="en")
-        text = " ".join([seg.text for seg in segments])
+        segments, info = model.transcribe(tmp_path, beam_size=5)
 
-        return jsonify({
-            'text': text,
-            'language': info.language,
-            'duration': info.duration
-        })
+        print("Recording is now being processed")
+
+        # create the md file for transcript
+        with open(md_path, "w") as f:
+            for segment in segments:
+                f.write(f"[{segment.start}s] {segment.text}\n")
+
     finally:
-        if os.path.exists(temp_path):
-            os.remove(temp_path)
+        os.unlink(tmp_path)
+
+    with open(md_path, "r") as f:
+        content = f.read()
+
+    os.unlink(md_path)
+
+    return jsonify({
+        "transcription": content
+        })
 
 
-@app.route('/health', methods=['GET'])
-def health():
-    return jsonify({'status': 'ok', 'service': 'python-api'})
-
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000, debug=False)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=8000, debug=False)
