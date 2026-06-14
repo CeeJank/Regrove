@@ -2,6 +2,7 @@ import os
 import tempfile
 import uuid
 
+import requests
 from faster_whisper import WhisperModel
 from flask import Flask, jsonify, request
 
@@ -70,12 +71,14 @@ def processRecording():
 
     # read the file to transmit
     with open(md_path, "r") as f:
-        content = f.read()
+        markdown = f.read()
 
     os.unlink(md_path)
 
     # contents of transcript in object for res
-    return jsonify({"transcription": content})
+    express_url = os.environ.get("ESPRESS_API_URL", "http://localhost:5000")
+    requests.post(f"{express_url}/new-endpoint", json={"transcription": markdown})
+    return jsonify({"status": "Processing the transcript"}), 202
 
 
 if __name__ == "__main__":

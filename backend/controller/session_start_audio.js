@@ -22,9 +22,10 @@ exports.transcribeAudio = async (req, res) => {
     });
 
     return res.json({
-      transcript: response.data.transcription,
-      language: response.data.language,
-      duration: response.data.duration,
+      // transcript: response.data.transcription,
+      // language: response.data.language,   old code when it flask returned to this endpoint
+      // duration: response.data.duration,
+      message: "Transcription in progress",
     });
   } catch (error) {
     console.error("Transcription controller error:", error.message);
