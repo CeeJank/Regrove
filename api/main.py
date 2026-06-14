@@ -76,7 +76,7 @@ def processRecording():
     os.unlink(md_path)
 
     # contents of transcript in object for res
-    express_url = os.environ.get("ESPRESS_API_URL", "http://localhost:5000")
+    express_url = os.environ.get("EXPRESS_API_URL", "http://localhost:5000")
     requests.post(f"{express_url}/new-endpoint", json={"transcription": markdown})
     return jsonify({"status": "Processing the transcript"}), 202
 

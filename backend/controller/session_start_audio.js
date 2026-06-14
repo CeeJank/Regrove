@@ -13,8 +13,8 @@ exports.transcribeAudio = async (req, res) => {
 
     const formData = new FormData();
     formData.append("audio", req.file.buffer, {
-      filename: req.file.originalname || "audio.webm",
-      contentType: req.file.mimetype || "audio/webm",
+      filename: req.file.originalname || "audio.webm" || "audio.mp4",
+      contentType: req.file.mimetype || "audio/webm" || "audio/webm",
     });
 
     const response = await axios.post(`${pythonApiUrl}/transcribe`, formData, {
