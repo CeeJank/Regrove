@@ -39,8 +39,3 @@ tqdm==4.68.2
 typer==0.25.1
 typing_extensions==4.15.0
 Werkzeug==3.1.8
-=======
-flask==3.0.3
-faster-whisper
-ffmpeg-python
->>>>>>> session-management
