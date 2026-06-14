@@ -4,7 +4,7 @@ const router = express.Router();
 const sessionAudioRoutes = require("./session_start_audio");
 const dashboardRoutes = require("./dashboard");
 const childProfileRoutes = require("./childProfile");
-const { startSession } = require("../controller/startSession");
+const { startSession } = require("../controllers/startSession");
 const authenticate = require("../middleware/auth");
 
 router.post("/session/start", authenticate, startSession);
