@@ -38,7 +38,8 @@ def processRecording():
 
     # Check for not .mp4
     if not recording.filename or (
-        recording.filename.endswith(".mp4") and not recording.filename.endswith(".webm")
+        not recording.filename.endswith(".mp4")
+        and not recording.filename.endswith(".webm")
     ):
         return jsonify({"Error": "Recording not .mp4"}), 400
 
