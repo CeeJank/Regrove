@@ -22,7 +22,7 @@ exports.transcribeAudio = async (req, res) => {
     });
 
     return res.json({
-      transcript: response.data.text,
+      transcript: response.data.transcription,
       language: response.data.language,
       duration: response.data.duration,
     });
