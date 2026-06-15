@@ -1,5 +1,6 @@
-const { Pool } = require('pg');
+const { Pool } = require("pg");
 
+// Pool manages PostgreSQL connections for the backend.
 const pool = new Pool({
   host: process.env.DB_HOST,
   port: process.env.DB_PORT || 5432,
