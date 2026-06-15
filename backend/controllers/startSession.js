@@ -1,4 +1,4 @@
-const { createSession } = require("../model/startSessionModel");
+const { createSession } = require("../models/startSessionModel");
 
 exports.startSession = (req, res) => {
   try {

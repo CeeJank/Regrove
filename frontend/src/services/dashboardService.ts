@@ -5,6 +5,7 @@ export async function fetchRecentChildren() {
 
   const response = await fetch(`${API_BASE}/workers/children/recent`, {
     headers: {
+      "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
   });

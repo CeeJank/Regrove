@@ -27,6 +27,7 @@ export async function fetchChildProfile(childId: number) {
 
   const response = await fetch(`${API_BASE}/children/${childId}`, {
     headers: {
+      "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
   });

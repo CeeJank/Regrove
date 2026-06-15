@@ -9,19 +9,13 @@ from flask import Flask, jsonify, request
 app = Flask(__name__)
 
 # choose model
-model_size = "large-v2"
+model_size = "base"
 
-# Run on NVIDIA GPU
-model = WhisperModel(model_size, device="cuda", compute_type="float16")
+# Run on CPU by default to prevent Docker compose blocking and GPU driver crashes
+model = WhisperModel(model_size, device="cpu", compute_type="int8")
 
-# For running on CPU
-# model = WhisperModel(model_size, device="cpu", compute_type="int8")
-
-
-@app.route("/health", methods=["GET"])
-def health():
-    return jsonify({"status": "ok", "service": "python-api"})
-
+# For running on NVIDIA GPU
+# model = WhisperModel(model_size, device="cuda", compute_type="float16")
 
 # temp endpoint for receiving from express
 @app.route("/transcribe", methods=["POST"])
@@ -76,9 +70,11 @@ def processRecording():
     os.unlink(md_path)
 
     # contents of transcript in object for res
-    express_url = os.environ.get("EXPRESS_API_URL", "http://localhost:5000")
-    requests.post(f"{express_url}/new-endpoint", json={"transcription": markdown})
-    return jsonify({"status": "Processing the transcript"}), 202
+    return jsonify({
+        "transcription": markdown,
+        "language": info.language,
+        "duration": info.duration
+    }), 200
 
 
 if __name__ == "__main__":
