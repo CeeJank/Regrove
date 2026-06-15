@@ -15,6 +15,9 @@ export default function HomePage() {
           <Link to="/dashboard" className="secondary-btn">
             Open dashboard mock view
           </Link>
+          <Link to="/testing" className="primary-btn">
+            Open API testing console
+          </Link>
         </nav>
       </section>
     </main>
