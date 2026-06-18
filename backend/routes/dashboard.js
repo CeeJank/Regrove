@@ -2,9 +2,10 @@ const express = require("express");
 const router = express.Router();
 
 const authenticate = require("../middleware/auth");
-const {getRecentChildrenForWorker} = require("../controllers/dashboardController");
+const { getDashboard } = require("../controllers/dashboardController");
 
-router.get("/children/recent", authenticate, getRecentChildrenForWorker);
-router.get("/dashboard/summary", authenticate, getDashboardHeaderData);
+// GET /api/workers/dashboard
+// Returns stat card counts + full case list for the logged-in social worker
+router.get("/dashboard", authenticate, getDashboard);
 
 module.exports = router;
