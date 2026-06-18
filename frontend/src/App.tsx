@@ -3,6 +3,8 @@ import ChildProfilePage from "./pages/ChildProfilePage";
 import DashboardPage from "./pages/DashboardPage";
 import HomePage from "./pages/HomePage";
 import RecordingPage from "./pages/RecordingPage";
+import YouthCataloguePage from "./pages/YouthCataloguePage";
+import CreateYouthProfilePage from "./pages/CreateYouthProfilePage";
 import "./styles/app.css";
 
 function App() {
@@ -13,6 +15,8 @@ function App() {
         <Route path="/children/:childId/session/:sessionId" element={<RecordingPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/children/:childId" element={<ChildProfilePage />} />
+        <Route path="/youth" element={<YouthCataloguePage />} />
+        <Route path="/youth/create" element={<CreateYouthProfilePage />} />
       </Routes>
     </BrowserRouter>
   );

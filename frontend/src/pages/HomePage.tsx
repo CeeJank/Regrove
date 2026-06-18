@@ -5,15 +5,20 @@ export default function HomePage() {
     <main className="page-shell">
       <section className="card">
         <p className="eyebrow">Regrove</p>
-        <h1>Session tools</h1>
+        <h1>SCS Youth Support Platform</h1>
         <p className="lead">
-          Start with the recording page, then grow the rest of the worker
-          dashboard from here.
+          Manage youth profiles, sessions, and worker assignments from one place.
         </p>
 
         <nav className="nav-links">
+          <Link to="/youth" className="primary-btn">
+            Youth Catalogue
+          </Link>
+          <Link to="/youth/create" className="secondary-btn">
+            + New Youth Profile
+          </Link>
           <Link to="/dashboard" className="secondary-btn">
-            Open dashboard mock view
+            Dashboard
           </Link>
         </nav>
       </section>

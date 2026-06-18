@@ -1,4 +1,4 @@
-const { getRecentChildrenForWorker } = require('../model/dashboardModel');
+const { getRecentChildrenForWorker } = require('../models/dashboardModel');
 
 exports.getRecentChildrenForWorker = (req, res) => {
   try {
