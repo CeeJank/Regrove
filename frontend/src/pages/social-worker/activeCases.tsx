@@ -6,9 +6,10 @@ const MOCK_CHILDREN: Record<string, string> = {
   'child-1': 'Alex Rivera', 'child-2': 'Jamie Tan', 'child-3': 'Sam Lim',
 };
 const RISK_META: Record<RiskLevel, { bg: string; text: string; label: string }> = {
-  high:   { bg: '#FEE2E2', text: '#B91C1C', label: 'High Risk' },
-  medium: { bg: '#FEF9C3', text: '#92400E', label: 'Medium Risk' },
-  low:    { bg: '#DCFCE7', text: '#166534', label: 'Low Risk' },
+  critical: { bg: '#EDE9FE', text: '#6D28D9', label: 'Critical' },
+  high:     { bg: '#FEE2E2', text: '#B91C1C', label: 'High Risk' },
+  medium:   { bg: '#FEF9C3', text: '#92400E', label: 'Medium Risk' },
+  low:      { bg: '#DCFCE7', text: '#166534', label: 'Low Risk' },
 };
 const MOODEMOJI = ['','😄','🙂','😐','😔','😢'];
 
@@ -85,7 +86,7 @@ const ActiveCases: React.FC = () => {
             <div className="case-section">
               <h3 className="case-section-title">Risk Level</h3>
               <div className="risk-selector">
-                {(['low', 'medium', 'high'] as RiskLevel[]).map(lvl => (
+                {(['low', 'medium', 'high', 'critical'] as RiskLevel[]).map(lvl => (
                   <button
                     key={lvl}
                     className={`risk-btn risk-btn--${lvl}${activeCase.riskLevel === lvl ? ' risk-btn--selected' : ''}`}

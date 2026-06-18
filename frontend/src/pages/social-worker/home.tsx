@@ -7,9 +7,10 @@ import { useReferrals } from '../../contexts/ReferralsContext';
 import { RiskLevel } from '../../types';
 
 const RISK_COLORS: Record<RiskLevel, { bg: string; text: string; label: string }> = {
-  high:   { bg: '#FEE2E2', text: '#DC2626', label: 'High Risk' },
-  medium: { bg: '#FEF9C3', text: '#CA8A04', label: 'Medium Risk' },
-  low:    { bg: '#DCFCE7', text: '#16A34A', label: 'Low Risk' },
+  critical: { bg: '#EDE9FE', text: '#6D28D9', label: 'Critical' },
+  high:     { bg: '#FEE2E2', text: '#DC2626', label: 'High Risk' },
+  medium:   { bg: '#FEF9C3', text: '#CA8A04', label: 'Medium Risk' },
+  low:      { bg: '#DCFCE7', text: '#16A34A', label: 'Low Risk' },
 };
 
 const SWHome: React.FC = () => {
@@ -67,7 +68,7 @@ const SWHome: React.FC = () => {
               <div className="case-avatar">{c.name[0]}</div>
               <div className="case-info">
                 <p className="case-name">{c.name}</p>
-                <p className="case-updated">Updated {new Date(c.lastUpdated).toLocaleDateString()}</p>
+                <p className="case-updated">Updated {c.lastUpdated ? new Date(c.lastUpdated).toLocaleDateString() : '—'}</p>
               </div>
               <span className="risk-badge" style={{ background: risk.bg, color: risk.text }}>
                 {risk.label}
