@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { UserRole } from '../types';
 import { useAuth } from '../contexts/AuthContext';
+import bgImage from '../images/background/Bg1.png';
 
 const RegisterPage: React.FC = () => {
   const [role, setRole] = useState<UserRole | null>(null);
@@ -42,7 +43,13 @@ const RegisterPage: React.FC = () => {
     setForm(f => ({ ...f, [k]: e.target.value }));
 
   return (
-    <div className="auth-page">
+    <div className="auth-page"
+    style={{
+        backgroundImage: `url(${bgImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        minHeight: '100vh',
+      }}>
       <div className="auth-card auth-card--wide">
         <Link to="/" className="auth-brand">
           <span>🌿</span> Regrove
