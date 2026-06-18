@@ -28,6 +28,11 @@ const mockRecentChildrenDb = [
   },
 ];
 
+// Model responsibility:
+// Demo/mock data source for worker dashboard cards.
+// Replace this with PostgreSQL queries when dashboard data is moved fully into the database.
+
+// Returns up to five recent youth profiles assigned to one worker.
 exports.getRecentChildrenForWorker = (workerId) => {
   return mockRecentChildrenDb.filter((item) => item.workerId === workerId).slice(0, 5);
 };

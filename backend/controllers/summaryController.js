@@ -1,87 +1,27 @@
-const pool = require("../config/db");
-const { generateSummary } = require("../services/aiSummaryService");
-const { formatTranscript } = require("../utils/formatTranscript");
+const summaryModel = require("../models/summaryModel");
+const summaryService = require("../services/summaryService");
 
+// Controller responsibility:
+// Handle summary API requests and delegate transcript/AI summary logic to services.
+
+// POST /api/summaries/:conversationId
+// Generates and stores a summary for one conversation.
 async function createSummary(req, res) {
-  try {
-    const { conversationId } = req.params;
+  const response = await summaryService.createSummaryForConversation(
+    req.params.conversationId
+  );
 
-    // Load the full chat history before creating a handover summary.
-    const messagesResult = await pool.query(
-      `SELECT sender_type, message
-       FROM messages
-       WHERE conversation_id = $1
-       ORDER BY created_at ASC`,
-      [conversationId]
-    );
-
-    if (messagesResult.rows.length === 0) {
-      return res.status(404).json({
-        message: "No messages found for this conversation",
-      });
-    }
-
-    const transcript = formatTranscript(messagesResult.rows);
-    const summaryText = await generateSummary(transcript);
-    const recommendedAction =
-      "Worker should review the transcript and follow up during working hours.";
-
-    const summaryResult = await pool.query(
-      `INSERT INTO summaries (
-         conversation_id,
-         summary,
-         urgency_level,
-         recommended_action
-       )
-       VALUES ($1, $2, $3, $4)
-       RETURNING *`,
-      [conversationId, summaryText, "medium", recommendedAction]
-    );
-
-    await pool.query(
-      `UPDATE conversations
-       SET needs_handover = false,
-           mode = $1
-       WHERE conversation_id = $2`,
-      ["human", conversationId]
-    );
-
-    return res.status(201).json({
-      message: "Summary created successfully",
-      transcript,
-      summary: summaryResult.rows[0],
-    });
-  } catch (error) {
-    console.error("Create summary error:", error.message);
-
-    return res.status(500).json({
-      message: "Failed to create summary",
-      error: error.message,
-    });
-  }
+  return res.status(201).json(response);
 }
 
+// GET /api/summaries/:conversationId
+// Returns all saved summaries for one conversation.
 async function getSummariesByConversation(req, res) {
-  try {
-    const { conversationId } = req.params;
+  const summaries = await summaryModel.findSummariesByConversation(
+    req.params.conversationId
+  );
 
-    const result = await pool.query(
-      `SELECT *
-       FROM summaries
-       WHERE conversation_id = $1
-       ORDER BY created_at DESC`,
-      [conversationId]
-    );
-
-    return res.status(200).json(result.rows);
-  } catch (error) {
-    console.error("Get summaries error:", error.message);
-
-    return res.status(500).json({
-      message: "Failed to load summaries",
-      error: error.message,
-    });
-  }
+  return res.status(200).json(summaries);
 }
 
 module.exports = {

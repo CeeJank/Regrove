@@ -6,6 +6,8 @@ const {
   getRecentChildrenForWorker,
 } = require("../controllers/dashboardController");
 
+// GET /api/workers/children/recent
+// Returns recent youth profiles assigned to the authenticated worker for dashboard display.
 router.get("/children/recent", authenticate, getRecentChildrenForWorker);
 
 module.exports = router;

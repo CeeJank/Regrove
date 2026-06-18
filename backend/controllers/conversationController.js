@@ -1,105 +1,84 @@
-const pool = require("../config/db");
+const conversationModel = require("../models/conversationModel");
+const summaryService = require("../services/summaryService");
 
+// Controller responsibility:
+// Receive HTTP requests, call model/service functions, and return JSON responses.
+// Database SQL stays inside models, not in this controller.
+
+// POST /api/conversations
+// Creates a new session/conversation between a youth and a worker.
 async function createConversation(req, res) {
-  try {
-    const { userId, workerId } = req.body;
+  const { userId, workerId } = req.body;
+  const conversation = await conversationModel.createConversation(
+    userId,
+    workerId
+  );
 
-    // A conversation must belong to one youth and one worker.
-    if (!userId || !workerId) {
-      return res.status(400).json({
-        message: "userId and workerId are required",
-      });
-    }
-
-    const result = await pool.query(
-      `INSERT INTO conversations (user_id, worker_id, status, mode)
-       VALUES ($1, $2, $3, $4)
-       RETURNING *`,
-      [userId, workerId, "open", "human"]
-    );
-
-    return res.status(201).json(result.rows[0]);
-  } catch (error) {
-    console.error("Create conversation error:", error.message);
-
-    return res.status(500).json({
-      message: "Failed to create conversation",
-      error: error.message,
-    });
-  }
+  return res.status(201).json(conversation);
 }
 
+// GET /api/conversations
+// Returns all conversations for dashboard/list views.
 async function getAllConversations(req, res) {
-  try {
-    const result = await pool.query(
-      `SELECT
-         conversations.conversation_id,
-         users.name AS youth_name,
-         workers.name AS worker_name,
-         conversations.status,
-         conversations.mode,
-         conversations.needs_handover,
-         conversations.risk_level,
-         conversations.last_message_at,
-         conversations.created_at
-       FROM conversations
-       LEFT JOIN users ON conversations.user_id = users.user_id
-       LEFT JOIN workers ON conversations.worker_id = workers.worker_id
-       ORDER BY conversations.last_message_at DESC`
-    );
+  const conversations = await conversationModel.findAllConversations();
 
-    return res.status(200).json(result.rows);
-  } catch (error) {
-    console.error("Get conversations error:", error.message);
-
-    return res.status(500).json({
-      message: "Failed to load conversations",
-      error: error.message,
-    });
-  }
+  return res.status(200).json(conversations);
 }
 
+// GET /api/conversations/:id
+// Returns one conversation by its session ID.
 async function getConversationById(req, res) {
-  try {
-    const { id } = req.params;
+  const conversation = await conversationModel.findConversationById(
+    req.params.id
+  );
 
-    const result = await pool.query(
-      `SELECT
-         conversations.conversation_id,
-         users.name AS youth_name,
-         workers.name AS worker_name,
-         conversations.status,
-         conversations.mode,
-         conversations.needs_handover,
-         conversations.risk_level,
-         conversations.last_message_at,
-         conversations.created_at
-       FROM conversations
-       LEFT JOIN users ON conversations.user_id = users.user_id
-       LEFT JOIN workers ON conversations.worker_id = workers.worker_id
-       WHERE conversations.conversation_id = $1`,
-      [id]
-    );
-
-    if (result.rows.length === 0) {
-      return res.status(404).json({
-        message: "Conversation not found",
-      });
-    }
-
-    return res.status(200).json(result.rows[0]);
-  } catch (error) {
-    console.error("Get conversation error:", error.message);
-
-    return res.status(500).json({
-      message: "Failed to load conversation",
-      error: error.message,
+  if (!conversation) {
+    return res.status(404).json({
+      message: "Conversation not found",
     });
   }
+
+  return res.status(200).json(conversation);
+}
+
+// GET /api/conversations/:id/transcript
+// Returns a reusable JSON transcript for one conversation.
+async function getConversationTranscript(req, res) {
+  const transcriptData = await summaryService.getTranscript(req.params.id);
+
+  if (!transcriptData) {
+    return res.status(404).json({
+      message: "No messages found for this conversation",
+    });
+  }
+
+  return res.status(200).json(transcriptData);
+}
+
+// GET /api/conversations/:id/transcript/download
+// Sends the transcript as a downloadable text file.
+async function downloadConversationTranscript(req, res) {
+  const transcriptData = await summaryService.getTranscript(req.params.id);
+
+  if (!transcriptData) {
+    return res.status(404).json({
+      message: "No messages found for this conversation",
+    });
+  }
+
+  res.setHeader("Content-Type", "text/plain; charset=utf-8");
+  res.setHeader(
+    "Content-Disposition",
+    `attachment; filename="conversation-${req.params.id}-transcript.txt"`
+  );
+
+  return res.status(200).send(transcriptData.transcript);
 }
 
 module.exports = {
   createConversation,
+  downloadConversationTranscript,
   getAllConversations,
   getConversationById,
+  getConversationTranscript,
 };

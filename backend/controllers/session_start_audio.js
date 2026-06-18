@@ -1,6 +1,9 @@
 const axios = require("axios");
 const FormData = require("form-data");
 
+// Controller responsibility:
+// Accept an uploaded audio file and forward it to the Python transcription API.
+// This controller integrates with an external service instead of a database model.
 exports.transcribeAudio = async (req, res) => {
   try {
     if (!req.file) {

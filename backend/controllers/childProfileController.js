@@ -1,5 +1,8 @@
-const { getChildProfileById } = require('../model/childProfileModel');
+const { getChildProfileById } = require('../models/childProfileModel');
 
+// Controller responsibility:
+// Validate the child/youth ID from the route and return one profile.
+// Profile lookup is delegated to childProfileModel.
 exports.getChildProfileById = (req, res) => {
   try {
     const childId = req.params.childId;

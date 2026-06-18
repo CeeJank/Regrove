@@ -40,6 +40,11 @@ const mockChildProfilesDb = [
   },
 ];
 
+// Model responsibility:
+// Demo/mock data source for one youth profile.
+// Replace this with PostgreSQL queries when this feature is connected to the full schema.
+
+// Finds one mock youth profile by child ID.
 exports.getChildProfileById = (childId) => {
   const numericId = Number(childId);
   return mockChildProfilesDb.find((item) => item.childId === numericId) || null;
