@@ -75,6 +75,7 @@ export interface ActiveCase {
   category: string | null; // case category e.g. 'Intensive Support'
   riskLevel: RiskLevel;
   notes: string;
+  notesHistory: NoteHistoryItem[]; // chronological history of notes
   aiSummary: string;
   lastUpdated: string;
   checkIns: CheckIn[];
@@ -92,5 +93,17 @@ export interface BotMessage {
   id: string;
   role: 'user' | 'assistant';
   content: string;
+  timestamp: string;
+}
+export interface NoteHistoryItem {
+  id: string;
+  noteText: string;
+  createdAt: string;
+}
+
+export interface CheckInItem {
+  id: string;
+  mood: number;
+  events: string;
   timestamp: string;
 }

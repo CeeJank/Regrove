@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { ActiveCase, CheckIn, RiskLevel } from '../types';
-import { fetchDashboard, DashboardStats } from '../services/casesService';
+import { fetchDashboard, DashboardStats, patchRiskLevel, patchNotes } from '../services/casesService';
 
 interface CasesContextType {
   cases: ActiveCase[];
@@ -9,8 +9,8 @@ interface CasesContextType {
   error: string | null;
   addCheckIn: (caseId: string, checkIn: CheckIn) => void;
   updateAiSummary: (caseId: string, summary: string) => void;
-  updateRiskLevel: (caseId: string, level: RiskLevel) => void;
-  updateNotes: (caseId: string, notes: string) => void;
+  updateRiskLevel: (caseId: string, level: RiskLevel) => Promise<void>;
+  updateNotes: (caseId: string, notes: string) => Promise<void>;
   removeCase: (caseId: string) => void;
   getCaseByChildId: (childId: string) => ActiveCase | undefined;
   refresh: () => void;
@@ -61,16 +61,31 @@ export const CasesProvider = ({ children }: { children: ReactNode }) => {
     );
   };
 
-  const updateRiskLevel = (caseId: string, level: RiskLevel) => {
+  const updateRiskLevel = async (caseId: string, level: RiskLevel) => {
+    // Optimistic update — UI reflects change immediately
     setCases(prev =>
       prev.map(c => (c.id === caseId ? { ...c, riskLevel: level } : c))
     );
+    try {
+      await patchRiskLevel(caseId, level);
+    } catch (err) {
+      console.error('Failed to persist risk level:', err);
+      // On failure, re-fetch to restore the true DB state
+      load();
+    }
   };
 
-  const updateNotes = (caseId: string, notes: string) => {
+  const updateNotes = async (caseId: string, notes: string) => {
+    // Optimistic update
     setCases(prev =>
       prev.map(c => (c.id === caseId ? { ...c, notes } : c))
     );
+    try {
+      await patchNotes(caseId, notes);
+    } catch (err) {
+      console.error('Failed to persist notes:', err);
+      load();
+    }
   };
 
   const removeCase = (caseId: string) => {

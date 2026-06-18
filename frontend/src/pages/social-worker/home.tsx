@@ -63,7 +63,7 @@ const SWHome: React.FC = () => {
         {cases.map(c => {
           const risk = RISK_COLORS[c.riskLevel];
           return (
-            <Link key={c.id} to="/sw/active-cases" className="case-row">
+            <Link key={c.id} to="/sw/active-cases" state={{ selectedId: c.id }} className="case-row">
               {/* Avatar initial comes from the real name returned by the API */}
               <div className="case-avatar">{c.name[0]}</div>
               <div className="case-info">
