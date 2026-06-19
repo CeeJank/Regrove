@@ -11,17 +11,12 @@ app = Flask(__name__)
 # choose model
 model_size = "large-v2"
 
-# Run on NVIDIA GPU
-model = WhisperModel(model_size, device="cuda", compute_type="float16")
-
-# For running on CPU
-# model = WhisperModel(model_size, device="cpu", compute_type="int8")
-
-
-@app.route("/health", methods=["GET"])
-def health():
-    return jsonify({"status": "ok", "service": "python-api"})
-
+try:
+    model = WhisperModel(model_size, device="cuda", compute_type="float16")
+    print("Loaded Whisper on CUDA")
+except Exception as e:
+    print(f"CUDA unavailable ({e}), falling back to CPU")
+    model = WhisperModel(model_size, device="cpu", compute_type="int8")
 
 # temp endpoint for receiving from express
 @app.route("/transcribe", methods=["POST"])
