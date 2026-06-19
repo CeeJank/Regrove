@@ -25,11 +25,20 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
       - JWT_SECRET=${JWT_SECRET}
       - PYTHON_API_URL=http://api:8000
+      - EXPRESS_API_URL=http://backend:5000
 
   api:
     build: ./api
     ports:
       - "8000:8000"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
 
   db:
     image: postgres:16-alpine

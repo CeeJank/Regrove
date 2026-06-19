@@ -11,11 +11,12 @@ app = Flask(__name__)
 # choose model
 model_size = "base"
 
-# Run on CPU by default to prevent Docker compose blocking and GPU driver crashes
-model = WhisperModel(model_size, device="cpu", compute_type="int8")
-
-# For running on NVIDIA GPU
-# model = WhisperModel(model_size, device="cuda", compute_type="float16")
+try:
+    model = WhisperModel(model_size, device="cuda", compute_type="float16")
+    print("Loaded Whisper on CUDA")
+except Exception as e:
+    print(f"CUDA unavailable ({e}), falling back to CPU")
+    model = WhisperModel(model_size, device="cpu", compute_type="int8")
 
 # temp endpoint for receiving from express
 @app.route("/transcribe", methods=["POST"])
