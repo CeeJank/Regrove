@@ -1,9 +1,9 @@
-const { getRecentChildrenForWorker } = require('../model/dashboardModel');
+const { getRecentChildrenForWorker } = require('../models/dashboardModel');
 
 exports.getRecentChildrenForWorker = (req, res) => {
   try {
     const workerId = req.user.workerId;
-    
+
     const data = getRecentChildrenForWorker(workerId);
 
     return res.status(200).json({
