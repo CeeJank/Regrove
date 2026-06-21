@@ -1071,10 +1071,77 @@ ALTER TABLE ONLY public.worker_youth_assignments
 ALTER TABLE ONLY public.youth_profiles
     ADD CONSTRAINT youth_profiles_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
 
+--
+-- Table structure for table public.events
+--
+
+CREATE TABLE public.events (
+    id integer NOT NULL,
+    title character varying(255) NOT NULL,
+    description text,
+    event_date date NOT NULL,
+    start_time time without time zone NOT NULL,
+    end_time time without time zone NOT NULL,
+    organizer_id integer
+);
+
+ALTER TABLE public.events OWNER TO postgres;
+
+--
+-- Name: events_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.events_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE public.events_id_seq OWNER TO postgres;
+ALTER SEQUENCE public.events_id_seq OWNED BY public.events.id;
+ALTER TABLE ONLY public.events ALTER COLUMN id SET DEFAULT nextval('public.events_id_seq'::regclass);
+ALTER TABLE ONLY public.events ADD CONSTRAINT events_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY public.events ADD CONSTRAINT events_organizer_id_fkey FOREIGN KEY (organizer_id) REFERENCES public.worker_profiles(id) ON DELETE SET NULL;
+
+
+--
+-- Table structure for table public.event_youth_invites
+--
+
+CREATE TABLE public.event_youth_invites (
+    id integer NOT NULL,
+    event_id integer NOT NULL,
+    youth_id integer NOT NULL,
+    status character varying(20) DEFAULT 'PENDING'::character varying,
+    CONSTRAINT event_youth_invites_status_check CHECK (((status)::text = ANY (ARRAY[('PENDING'::character varying)::text, ('ACCEPTED'::character varying)::text, ('DECLINED'::character varying)::text, ('CONFIRMED'::character varying)::text])))
+);
+
+ALTER TABLE public.event_youth_invites OWNER TO postgres;
+
+--
+-- Name: event_youth_invites_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.event_youth_invites_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE public.event_youth_invites_id_seq OWNER TO postgres;
+ALTER SEQUENCE public.event_youth_invites_id_seq OWNED BY public.event_youth_invites.id;
+ALTER TABLE ONLY public.event_youth_invites ALTER COLUMN id SET DEFAULT nextval('public.event_youth_invites_id_seq'::regclass);
+ALTER TABLE ONLY public.event_youth_invites ADD CONSTRAINT event_youth_invites_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY public.event_youth_invites ADD CONSTRAINT event_youth_invites_event_id_fkey FOREIGN KEY (event_id) REFERENCES public.events(id) ON DELETE CASCADE;
+ALTER TABLE ONLY public.event_youth_invites ADD CONSTRAINT event_youth_invites_youth_id_fkey FOREIGN KEY (youth_id) REFERENCES public.youth_profiles(id) ON DELETE CASCADE;
 
 --
 -- PostgreSQL database dump complete
 --
 
-\unrestrict Xw38GQynBLFJJDswg0reqrOFvcne1OTXIwq2Xidxzp6n3fRled8fhTVqKeMPPiz
+--\unrestrict Xw38GQynBLFJJDswg0reqrOFvcne1OTXIwq2Xidxzp6n3fRled8fhTVqKeMPPiz
 

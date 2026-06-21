@@ -196,6 +196,14 @@ INSERT INTO public.actions (action_id, case_id, hobbies, extra_info, encourageme
 (9, 25, 'mobile gaming', 'CW provided information regarding a supervised gaming club session at the community centre.', 'CW encouraged Nurul Huda''s continued interest and participation in mobile gaming.', '2026-06-15 17:19:00'),
 (10, 28, 'K-pop dance', 'CW provided information regarding a beginner K-pop dance class run by a community youth group.', 'CW encouraged Yu Xuan''s continued interest and participation in K-pop dance.', '2026-06-08 07:30:00');
 
+INSERT INTO public.events (id, title, description, event_date, start_time, end_time, organizer_id) VALUES
+(1, 'Weekly Counselling Session', 'Discussing academic goals and family updates.', '2026-06-23', '14:00:00', '15:00:00', 1),
+(2, 'Art Therapy Group Workshop', 'Creative self-expression session with peers.', '2026-06-26', '10:00:00', '11:30:00', 1);
+
+INSERT INTO public.event_youth_invites (id, event_id, youth_id, status) VALUES
+(1, 1, 2, 'CONFIRMED'),
+(2, 2, 2, 'PENDING');
+
 SELECT setval('public.users_id_seq', COALESCE((SELECT MAX(id) FROM public.users), 1));
 SELECT setval('public.worker_profiles_id_seq', COALESCE((SELECT MAX(id) FROM public.worker_profiles), 1));
 SELECT setval('public.youth_profiles_id_seq', COALESCE((SELECT MAX(id) FROM public.youth_profiles), 1));
@@ -210,5 +218,7 @@ SELECT setval('public.handover_reports_id_seq', COALESCE((SELECT MAX(id) FROM pu
 SELECT setval('public.cans_domain_domain_id_seq', COALESCE((SELECT MAX(domain_id) FROM public.cans_domain), 1));
 SELECT setval('public.cans_case_case_id_seq', COALESCE((SELECT MAX(case_id) FROM public.cans_case), 1));
 SELECT setval('public.actions_action_id_seq', COALESCE((SELECT MAX(action_id) FROM public.actions), 1));
+SELECT setval('public.events_id_seq', COALESCE((SELECT MAX(id) FROM public.events), 1));
+SELECT setval('public.event_youth_invites_id_seq', COALESCE((SELECT MAX(id) FROM public.event_youth_invites), 1));
 
 COMMIT;

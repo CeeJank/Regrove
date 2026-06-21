@@ -107,3 +107,17 @@ export interface CheckInItem {
   events: string;
   timestamp: string;
 }
+
+export interface UnifiedHubEvent {
+  id: string;
+  origin: 'manual';
+  title: string;
+  date: string;        // YYYY-MM-DD string format mapped via TO_CHAR
+  startTime: string;   // HH:MM
+  endTime: string;     // HH:MM
+  status: string;      // PENDING, ACCEPTED, DECLINED
+  associatedChild: string;
+  extraContext: {
+    description?: string;
+  } | null;
+}
