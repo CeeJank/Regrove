@@ -16,6 +16,9 @@ const SWCalendar: React.FC = () => {
   const [showCreate, setShowCreate] = useState(false);
   const [assignedYouths, setAssignedYouths] = useState<AssignedYouth[]>([]);
   
+  // Local status state bridge to instantly update UI bypassing custom hook caching
+  const [localStatuses, setLocalStatuses] = useState<Record<string, string>>({});
+  
   const [form, setForm] = useState({ 
     title: '', 
     description: '', 
@@ -53,6 +56,21 @@ const SWCalendar: React.FC = () => {
     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     setSelectedDateStr(dateStr);
   };
+  
+  const handleStatusUpdate = async (id: string, newStatus: 'confirmed' | 'declined') => {
+    try {
+      const uppercaseStatus = newStatus.toUpperCase();
+      
+      // 1. Fire the PATCH request to your fresh MVC endpoint with uppercase formatting
+      await axios.patch(`/api/events/${id}/status`, { status: uppercaseStatus });
+      
+      // 2. Reflect change locally so the component UI shifts state instantly
+      setLocalStatuses(prev => ({ ...prev, [id]: uppercaseStatus }));
+    } catch (err) {
+      console.error(`Failed to update event status to ${newStatus}:`, err);
+      alert('Could not update appointment status. Please try again.');
+    }
+  };
 
   const handleCreateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,6 +96,12 @@ const SWCalendar: React.FC = () => {
 
   const handleCancelBooking = async (id: string) => {
     await service.deleteEvent(id);
+    // Clean up local tracked state if it was canceled
+    setLocalStatuses(prev => {
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
   };
 
   let displayDayEvents: GridEventShape[] = [];
@@ -87,7 +111,6 @@ const SWCalendar: React.FC = () => {
   }
 
   return (
-    // FIX: Removed #C9ECF8 and adjusted alignment parameters to flush perfectly with standard workspace wrappers
     <div className="page-content" style={{ padding: '24px', backgroundColor: '#F8FAFC', minHeight: '100%', fontFamily: 'Plus Jakarta Sans', boxSizing: 'border-box' }}>
     
       {/* BRAND HEADER BANNER */}
@@ -129,7 +152,6 @@ const SWCalendar: React.FC = () => {
             {DAYS.map(d => <div key={d} style={{ padding: '8px 0' }}>{d}</div>)}
           </div>
 
-          {/* FIX: Set 'minmax(0, 1fr)' layout structure to completely lock the absolute cell dimensions */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: '10px' }}>
             {Array.from({ length: firstDayOffset }).map((_, i) => <div key={`empty-${i}`} style={{ backgroundColor: '#F8FAFC', borderRadius: '6px', minHeight: '130px' }} />)}
             {Array.from({ length: daysInMonth }).map((_, i) => {
@@ -144,7 +166,7 @@ const SWCalendar: React.FC = () => {
                   style={{ 
                     border: isSelected ? '2px solid #2563EB' : '1px solid #E2E8F0', 
                     borderRadius: '8px', 
-                    minHeight: '135px', // FIX: Slightly scaled layout window size up for line items
+                    minHeight: '135px', 
                     padding: '8px 6px', 
                     backgroundColor: isSelected ? '#EFF6FF' : '#FFF', 
                     cursor: 'pointer', 
@@ -167,12 +189,11 @@ const SWCalendar: React.FC = () => {
                           fontWeight: '600', 
                           backgroundColor: '#DBEAFE',
                           color: '#1E40AF',
-                          // FIX: Modified text configurations to permit beautiful clean multi-line wrapping sequences
                           whiteSpace: 'normal',
                           wordBreak: 'break-word',
                           lineHeight: '1.2',
                           display: '-webkit-box',
-                          WebkitLineClamp: 2, // Keeps things secure by wrapping up to 2 distinct lines maximum
+                          WebkitLineClamp: 2, 
                           WebkitBoxOrient: 'vertical',
                           overflow: 'hidden'
                         }}
@@ -201,44 +222,116 @@ const SWCalendar: React.FC = () => {
               <p style={{ color: '#64748B', fontStyle: 'italic' }}>No appointments scheduled for this date.</p>
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
-                {displayDayEvents.map(evt => (
-                  <div key={evt.id} style={{ border: '1px solid #E2E8F0', borderRadius: '8px', padding: '16px', backgroundColor: '#F8FAFC', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                    <div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                        <strong style={{ color: '#1E293B' }}>{evt.title}</strong>
-                        <span style={{ fontSize: '0.7rem', padding: '2px 6px', backgroundColor: '#DBEAFE', color: '#2563EB', borderRadius: '8px', fontWeight: 'bold', textTransform: 'uppercase' }}>
-                          {evt.status || 'PENDING'}
-                        </span>
+                {displayDayEvents.map(evt => {
+                  // Fallback cascade resolving local state overrides first
+                  const currentStatus = localStatuses[evt.id] || evt.status || 'PENDING';
+                  const lowerStatus = currentStatus.toLowerCase();
+
+                  return (
+                    <div key={evt.id} style={{ border: '1px solid #E2E8F0', borderRadius: '8px', padding: '16px', backgroundColor: '#F8FAFC', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                          <strong style={{ color: '#1E293B' }}>{evt.title}</strong>
+                          <span style={{ 
+                            fontSize: '0.7rem', 
+                            padding: '2px 6px', 
+                            borderRadius: '8px', 
+                            fontWeight: 'bold', 
+                            textTransform: 'uppercase',
+                            backgroundColor: 
+                              lowerStatus === 'confirmed' ? '#DCFCE7' : 
+                              lowerStatus === 'declined' ? '#FEE2E2' : '#DBEAFE',
+                            color: 
+                              lowerStatus === 'confirmed' ? '#15803D' : 
+                              lowerStatus === 'declined' ? '#B91C1C' : '#2563EB'
+                            }}>
+                            {currentStatus}
+                          </span>
+                        </div>
+                        
+                        <p style={{ margin: '2px 0', fontSize: '0.8rem', color: '#64748B' }}>⏰ Time: {evt.startTime} – {evt.endTime}</p>
+                        <p style={{ margin: '2px 0', fontSize: '0.8rem', color: '#1E293B' }}>👶 Attending Youth: <strong>{evt.associatedChild}</strong></p>
+
+                        {evt.context?.description && (
+                          <p 
+                            style={{ 
+                              fontSize: '0.8rem', 
+                              color: '#475569', 
+                              margin: '8px 0 0 0', 
+                              padding: '8px', 
+                              backgroundColor: '#F1F5F9', 
+                              borderRadius: '4px',
+                              whiteSpace: 'pre-wrap'
+                            }}
+                          >
+                            {evt.context.description}
+                          </p>
+                        )}
                       </div>
-                      
-                      <p style={{ margin: '2px 0', fontSize: '0.8rem', color: '#64748B' }}>⏰ Time: {evt.startTime} – {evt.endTime}</p>
-                      <p style={{ margin: '2px 0', fontSize: '0.8rem', color: '#1E293B' }}>👶 Attending Youth: <strong>{evt.associatedChild}</strong></p>
 
-                      {evt.context?.description && (
-                        <p 
-                          style={{ 
-                            fontSize: '0.8rem', 
-                            color: '#475569', 
-                            margin: '8px 0 0 0', 
-                            padding: '8px', 
-                            backgroundColor: '#F1F5F9', 
-                            borderRadius: '4px',
-                            whiteSpace: 'pre-wrap'
-                          }}
-                        >
-                          {evt.context.description}
-                        </p>
-                      )}
+                      {/* CONTEXTUAL ACTION MANAGEMENT FOOTER */}
+                      <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                        {lowerStatus === 'pending' ? (
+                          <>
+                            <button 
+                              onClick={() => handleStatusUpdate(evt.id, 'confirmed')} 
+                              style={{ 
+                                flex: 1, 
+                                border: 'none', 
+                                backgroundColor: '#10B981', 
+                                color: '#FFF', 
+                                padding: '10px', 
+                                borderRadius: '6px', 
+                                fontWeight: 'bold', 
+                                cursor: 'pointer', 
+                                fontSize: '0.8rem'
+                              }}
+                            >
+                              ✓ Confirm
+                            </button>
+                            <button 
+                              onClick={() => handleStatusUpdate(evt.id, 'declined')} 
+                              style={{ 
+                                flex: 1, 
+                                border: '1px solid #E2E8F0', 
+                                backgroundColor: '#FFFFFF', 
+                                color: '#64748B', 
+                                padding: '10px', 
+                                borderRadius: '6px', 
+                                fontWeight: 'bold', 
+                                cursor: 'pointer', 
+                                fontSize: '0.8rem'
+                              }}
+                            >
+                              Decline
+                            </button>
+                          </>
+                        ) : lowerStatus === 'confirmed' ? (
+                          <button 
+                            onClick={() => handleCancelBooking(evt.id)} 
+                            style={{ 
+                              width: '100%', 
+                              border: 'none', 
+                              backgroundColor: '#EF4444', 
+                              color: '#FFF', 
+                              padding: '10px', 
+                              borderRadius: '6px', 
+                              fontWeight: 'bold', 
+                              cursor: 'pointer', 
+                              fontSize: '0.8rem'
+                            }}
+                          >
+                            Cancel Appointment
+                          </button>
+                        ) : (
+                          <p style={{ margin: 0, fontSize: '0.8rem', color: '#94A3B8', fontStyle: 'italic', textAlign: 'center', width: '100%', padding: '6px 0' }}>
+                            This appointment request was declined.
+                          </p>
+                        )}
+                      </div>
                     </div>
-
-                    <button 
-                      onClick={() => handleCancelBooking(evt.id)} 
-                      style={{ width: '100%', marginTop: '12px', border: 'none', backgroundColor: '#EF4444', color: '#FFF', padding: '8px', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.8rem' }}
-                    >
-                      Cancel Appointment
-                    </button>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

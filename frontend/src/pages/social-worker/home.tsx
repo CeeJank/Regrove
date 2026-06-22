@@ -15,15 +15,30 @@ const RISK_COLORS: Record<RiskLevel, { bg: string; text: string; label: string }
 
 const SWHome: React.FC = () => {
   const { user } = useAuth();
-  const { cases, loading } = useCases();
-  const { getEventsForUser } = useEvents();
+  const { cases, loading: casesLoading } = useCases();
+  
+  // FIX: Destructure the reactive database array and state directly from the new context layout
+  const { events, loading: eventsLoading } = useEvents();
   const { getIncomingReferrals } = useReferrals();
 
-  const confirmedEvents = user ? getEventsForUser(user.id).filter(e => e.status === 'confirmed') : [];
+  // Get current ISO string date component (YYYY-MM-DD)
+  const todayStr = new Date().toISOString().split('T')[0];
+
+  // FIX: Explicitly type-safe filters matching database uppercase strings
+  const upcomingEvents = events.filter(e => 
+    e.status.toUpperCase() === 'CONFIRMED' && e.date >= todayStr
+  );
+
+  const pendingEvents = events.filter(e => 
+    e.status.toUpperCase() === 'PENDING'
+  );
+
   const pendingReferrals = user ? getIncomingReferrals(user.id).filter(r => r.status === 'pending') : [];
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+
+  const isGlobalLoading = casesLoading || eventsLoading;
 
   return (
     <div className="page-content">
@@ -35,14 +50,19 @@ const SWHome: React.FC = () => {
         <Link to="/sw/dashboard" className="btn btn--primary">Full Dashboard</Link>
       </div>
 
-      <div className="stat-cards">
+      {/* REFACTORED STAT CARDS WITH THE NEW METRICS */}
+      <div className="stat-cards" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
         <div className="stat-card">
           <p className="stat-label">Active Cases</p>
           <p className="stat-value">{cases.length}</p>
         </div>
         <div className="stat-card">
-          <p className="stat-label">Confirmed Events</p>
-          <p className="stat-value">{confirmedEvents.length}</p>
+          <p className="stat-label">Upcoming Sessions</p>
+          <p className="stat-value" style={{ color: '#16A34A' }}>{upcomingEvents.length}</p>
+        </div>
+        <div className="stat-card">
+          <p className="stat-label">Pending Invites</p>
+          <p className="stat-value" style={{ color: '#2563EB' }}>{pendingEvents.length}</p>
         </div>
         <div className="stat-card">
           <p className="stat-label">Pending Referrals</p>
@@ -56,16 +76,15 @@ const SWHome: React.FC = () => {
       </div>
 
       <div className="case-list">
-        {loading && <p className="page-sub">Loading cases…</p>}
-        {!loading && cases.length === 0 && (
+        {isGlobalLoading && <p className="page-sub">Loading live system workspace records…</p>}
+        {!isGlobalLoading && cases.length === 0 && (
           <p className="page-sub">No active cases assigned to you.</p>
         )}
-        {cases.map(c => {
+        {!isGlobalLoading && cases.map(c => {
           const risk = RISK_COLORS[c.riskLevel];
           return (
             <Link key={c.id} to="/sw/active-cases" state={{ selectedId: c.id }} className="case-row">
-              {/* Avatar initial comes from the real name returned by the API */}
-              <div className="case-avatar">{c.name[0]}</div>
+              <div className="case-avatar">{c.name ? c.name[0] : '?'}</div>
               <div className="case-info">
                 <p className="case-name">{c.name}</p>
                 <p className="case-updated">Updated {c.lastUpdated ? new Date(c.lastUpdated).toLocaleDateString() : '—'}</p>

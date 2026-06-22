@@ -44,7 +44,15 @@ module.exports = {
 
   // Inserts an event and links the youth invite record
   createManualEvent: async (eventData) => {
-    const { title, description, date, startTime, endTime, organizerId, youthId } = eventData;
+    const {
+      title,
+      description,
+      date,
+      startTime,
+      endTime,
+      organizerId,
+      youthId,
+    } = eventData;
     const client = await pool.connect();
 
     try {
@@ -88,7 +96,7 @@ module.exports = {
 
       const ownershipCheck = await client.query(
         `SELECT id FROM public.events WHERE id = $1 AND organizer_id = $2;`,
-        [eventId, requesterId]
+        [eventId, requesterId],
       );
 
       if (ownershipCheck.rows.length === 0) {
@@ -97,7 +105,10 @@ module.exports = {
       }
 
       // Cascade deletes invites, then drops primary event row
-      await client.query(`DELETE FROM public.event_youth_invites WHERE event_id = $1;`, [eventId]);
+      await client.query(
+        `DELETE FROM public.event_youth_invites WHERE event_id = $1;`,
+        [eventId],
+      );
       await client.query(`DELETE FROM public.events WHERE id = $1;`, [eventId]);
 
       await client.query("COMMIT");
@@ -108,5 +119,18 @@ module.exports = {
     } finally {
       client.release();
     }
+  },
+
+  updateStatus: async (id, status) => {
+    const query = `
+      UPDATE public.event_youth_invites 
+      SET status = $1
+      WHERE event_id = $2 
+      RETURNING *;
+    `;
+    const values = [status, id];
+
+    const { rows } = await pool.query(query, values);
+    return rows[0] || null;
   },
 };

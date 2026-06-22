@@ -8,5 +8,6 @@ router.get("/hub", authenticate, eventController.getCalendarHubFeed);
 router.get("/assigned-youth", authenticate, eventController.getAssignedYouthCaseload); // Mapped under /api/events
 router.post("/", authenticate, eventController.createNewEvent);
 router.delete("/:id", authenticate, eventController.removeEvent);
+router.patch('/:id/status', eventController.modifyEventStatus);
 
 module.exports = router;
