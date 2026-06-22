@@ -1,10 +1,8 @@
 const { generateSummary } = require("./aiSummaryService");
 const messageModel = require("../models/messageModel");
+const riskAssessmentModel = require("../models/riskAssessmentModel");
 const summaryModel = require("../models/summaryModel");
 const { formatTranscript } = require("../utils/formatTranscript");
-
-const DEFAULT_RECOMMENDED_ACTION =
-  "Worker should review the transcript and follow up during working hours.";
 
 async function getTranscript(conversationId) {
   const messages = await messageModel.findTranscriptMessages(conversationId);
@@ -37,14 +35,23 @@ async function createSummaryForConversation(conversationId) {
     throw error;
   }
 
-  const summaryText = await generateSummary(transcriptData.transcript);
-  const summary = await summaryModel.createAiSummary(conversationId, summaryText);
+  const summaryResultFromAI = await generateSummary(transcriptData.transcript);
+  const summary = await summaryModel.createAiSummary(
+    conversationId,
+    summaryResultFromAI.summaryText
+  );
+
+  await riskAssessmentModel.saveRiskAssessment(
+    conversationId,
+    summaryResultFromAI.riskLevel,
+    "Risk detected from handover transcript summary."
+  );
 
   await summaryModel.createHandoverReport({
     youthId: session.youth_id,
     conversationId,
-    summaryText,
-    recommendedAction: DEFAULT_RECOMMENDED_ACTION,
+    summaryText: summaryResultFromAI.summaryText,
+    recommendedAction: summaryResultFromAI.recommendedAction,
   });
 
   await summaryModel.updateSessionStatus(conversationId, "ESCALATED");
@@ -53,6 +60,9 @@ async function createSummaryForConversation(conversationId) {
     message: "Summary created successfully",
     transcript: transcriptData.transcript,
     summary,
+    riskLevel: summaryResultFromAI.riskLevel,
+    recommendedAction: summaryResultFromAI.recommendedAction,
+    suggestedOpeningMessage: summaryResultFromAI.suggestedOpeningMessage,
   };
 }
 

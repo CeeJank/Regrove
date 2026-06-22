@@ -1,6 +1,7 @@
 const { generateAIReply } = require("./aiChatService");
 const { isAfterWorkingHours } = require("./timeService");
 const messageModel = require("../models/messageModel");
+const riskAssessmentModel = require("../models/riskAssessmentModel");
 
 async function sendWorkerMessage({ conversationId, workerId, message }) {
   const workerMessage = await messageModel.createMessage({
@@ -49,13 +50,19 @@ async function sendYouthMessage({ conversationId, userId, message, forceAi }) {
     };
   }
 
-  const aiReplyText = await generateAIReply(message);
+  const aiResult = await generateAIReply(message);
   const aiReply = await messageModel.createMessage({
     conversationId,
     senderType: "AI",
     senderId: null,
-    message: aiReplyText,
+    message: aiResult.reply,
   });
+
+  await riskAssessmentModel.saveRiskAssessment(
+    conversationId,
+    aiResult.riskLevel,
+    "Risk detected from after-hours youth message."
+  );
 
   await messageModel.updateSessionMode(
     conversationId,
@@ -68,6 +75,8 @@ async function sendYouthMessage({ conversationId, userId, message, forceAi }) {
     message: "AI replied after-hours",
     youthMessage,
     aiReply,
+    riskLevel: aiResult.riskLevel,
+    needsUrgentReview: aiResult.needsUrgentReview,
   };
 }
 

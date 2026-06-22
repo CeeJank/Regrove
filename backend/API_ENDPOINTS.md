@@ -26,6 +26,25 @@ The script creates a fresh test conversation and checks the full flow:
 health check -> database check -> youth message -> AI reply -> transcript -> summary -> handover -> mark reviewed -> worker reply
 ```
 
+## Real AI Setup
+
+The backend uses Gemini when `GEMINI_API_KEY` is available.
+
+Create a local `.env` file from `.env.example`:
+
+```powershell
+copy .env.example .env
+```
+
+Then set:
+
+```text
+GEMINI_API_KEY=your_real_gemini_key
+GEMINI_MODEL=gemini-2.5-flash
+```
+
+If `GEMINI_API_KEY` is missing or Gemini fails during a demo, the backend automatically uses the safe fallback reply/summary so the chat flow still works.
+
 ## Health
 
 ### GET `/`
