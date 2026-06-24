@@ -1,20 +1,40 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import logo from '../images/logo/Regrove_Logo.png';
+
+import footerImage1 from '../images/footer/Footer1.png';
 
 const MainPage: React.FC = () => {
   return (
-    <div className="main-landing">
-      <div className="landing-bg-blur landing-bg-blur--1" />
-      <div className="landing-bg-blur landing-bg-blur--2" />
+    <div className="main-landing"
+    style={{ 
+        backgroundColor: '#0574cc'
+      }}>
 
-      <header className="landing-header">
+      <header className="landing-header"
+      style={{ 
+        backgroundColor: '#ffffff'
+      }}>
         <div className="landing-logo">
-          <span className="logo-leaf">🌿</span>
-          <span className="logo-text">Regrove</span>
+          <img 
+            src={logo} // Your imported logo
+            alt="Regrove logo" 
+            style={{ 
+            height: '100px',      // Adjust height here
+            width: 'auto',       // Keeps proportions
+            borderRadius: '25%',
+            display: 'inline-block',
+            verticalAlign: 'middle',
+            marginRight: '8px'   // Space between image and text
+            }} 
+          />
         </div>
       </header>
 
-      <section className="landing-hero">
+      <section className="landing-hero"
+      style={{ 
+        backgroundColor: '#ffffff'
+      }}>
         <div className="hero-eyebrow">The safe space to grow</div>
         <h1 className="hero-headline">
           Everyone deserves<br />
@@ -30,7 +50,10 @@ const MainPage: React.FC = () => {
         </div>
       </section>
 
-      <section className="landing-features">
+      <section className="landing-features"
+      style={{ 
+        backgroundColor: '#ffffff'
+      }}>
         <div className="feature-card">
           <div className="feature-icon">💖</div>
           <h3>Trust</h3>
@@ -52,6 +75,17 @@ const MainPage: React.FC = () => {
           <p>Regrow, Redo & Regrove. Step by step. Hand in hand. Together we will succeed!</p>
         </div>
       </section>
+        
+      <footer>
+        <img 
+          src={footerImage1} 
+          alt="Footer" 
+          style={{ 
+            maxWidth: '100%',   // Prevents overflow on small screens
+            height: 'auto'      // Keeps the original aspect ratio and size
+          }} 
+        />
+      </footer>
     </div>
   );
 };

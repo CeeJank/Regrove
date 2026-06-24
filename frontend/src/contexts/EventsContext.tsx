@@ -14,26 +14,18 @@ const EventsContext = createContext<EventsContextType | undefined>(undefined);
 export const EventsProvider = ({ children }: { children: ReactNode }) => {
   const [events, setEvents] = useState<CalendarEvent[]>([
     {
-      id: 'evt-1',
-      title: 'Weekly Check-In Session',
+      id: 'evt-1', title: 'Weekly Check-In Session',
       date: new Date(Date.now() + 86400000 * 2).toISOString().split('T')[0],
-      startTime: '14:00',
-      endTime: '15:00',
-      organizerId: 'worker-1',
-      workerIds: ['worker-1'],
-      childIds: ['child-1'],
-      status: 'confirmed',
+      startTime: '14:00', endTime: '15:00', organizerId: 'worker-1',
+      workerIds: ['worker-1'], childIds: ['child-1'], status: 'confirmed',
+      inviteStatuses: { 'child-1': 'accepted', 'worker-1': 'accepted' },
     },
     {
-      id: 'evt-2',
-      title: 'Group Support Meeting',
+      id: 'evt-2', title: 'Group Support Meeting',
       date: new Date(Date.now() + 86400000 * 5).toISOString().split('T')[0],
-      startTime: '10:00',
-      endTime: '11:30',
-      organizerId: 'worker-1',
-      workerIds: ['worker-1', 'worker-2'],
-      childIds: ['child-1', 'child-2'],
-      status: 'pending',
+      startTime: '10:00', endTime: '11:30', organizerId: 'worker-1',
+      workerIds: ['worker-1', 'worker-2'], childIds: ['child-1', 'child-2'], status: 'pending',
+      inviteStatuses: { 'worker-1': 'accepted', 'worker-2': 'pending', 'child-1': 'pending', 'child-2': 'pending' },
     },
   ]);
 
@@ -49,18 +41,23 @@ export const EventsProvider = ({ children }: { children: ReactNode }) => {
     return true;
   };
 
-  const respondToEvent = (eventId: string, _userId: string, accept: boolean) => {
-    setEvents(prev =>
-      prev.map(e =>
-        e.id === eventId ? { ...e, status: accept ? 'confirmed' : 'declined' } : e
-      )
-    );
+  const respondToEvent = (eventId: string, userId: string, accept: boolean) => {
+    setEvents(prev => prev.map(e => {
+      if (e.id !== eventId) return e;
+      const newStatuses: Record<string, 'pending' | 'accepted' | 'declined'> = { ...(e.inviteStatuses ?? {}), [userId]: accept ? 'accepted' : 'declined' };
+      const allParticipants = [...e.workerIds, ...e.childIds];
+      const allAccepted = allParticipants.every(id => newStatuses[id] === 'accepted');
+      const anyDeclined = allParticipants.some(id => newStatuses[id] === 'declined');
+      return {
+        ...e,
+        inviteStatuses: newStatuses,
+        status: allAccepted ? 'confirmed' : anyDeclined ? 'declined' : 'pending',
+      };
+    }));
   };
 
   const getEventsForUser = (userId: string) =>
-    events.filter(
-      e => e.organizerId === userId || e.workerIds.includes(userId) || e.childIds.includes(userId)
-    );
+    events.filter(e => e.organizerId === userId || e.workerIds.includes(userId) || e.childIds.includes(userId));
 
   return (
     <EventsContext.Provider value={{ events, createEvent, deleteEvent, respondToEvent, getEventsForUser }}>

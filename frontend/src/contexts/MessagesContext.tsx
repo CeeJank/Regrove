@@ -5,58 +5,42 @@ interface MessagesContextType {
   messages: Message[];
   sendMessage: (msg: Omit<Message, 'id' | 'timestamp'>) => void;
   getConversation: (userA: string, userB: string) => Message[];
+  getRecentContacts: (userId: string) => string[];
 }
 
 const MessagesContext = createContext<MessagesContextType | undefined>(undefined);
 
 export const MessagesProvider = ({ children }: { children: ReactNode }) => {
   const [messages, setMessages] = useState<Message[]>([
-    {
-      id: 'msg-1',
-      senderId: 'worker-1',
-      receiverId: 'child-1',
-      content: 'Hi Alex, how are you feeling today?',
-      timestamp: new Date(Date.now() - 3600000).toISOString(),
-      type: 'text',
-    },
-    {
-      id: 'msg-2',
-      senderId: 'child-1',
-      receiverId: 'worker-1',
-      content: "I'm doing okay, a bit stressed about school.",
-      timestamp: new Date(Date.now() - 3000000).toISOString(),
-      type: 'text',
-    },
-    {
-      id: 'msg-3',
-      senderId: 'worker-1',
-      receiverId: 'child-1',
-      content: "That's understandable. Let's talk about it in our session.",
-      timestamp: new Date(Date.now() - 1800000).toISOString(),
-      type: 'text',
-    },
+    { id: 'msg-1', senderId: 'worker-1', receiverId: 'child-1', content: 'Hi Alex, how are you feeling today?', timestamp: new Date(Date.now() - 3600000).toISOString(), type: 'text' },
+    { id: 'msg-2', senderId: 'child-1', receiverId: 'worker-1', content: "I'm doing okay, a bit stressed about school.", timestamp: new Date(Date.now() - 3000000).toISOString(), type: 'text' },
+    { id: 'msg-3', senderId: 'worker-1', receiverId: 'child-1', content: "That's understandable. Let's talk about it in our session.", timestamp: new Date(Date.now() - 1800000).toISOString(), type: 'text' },
   ]);
 
   const sendMessage = (msg: Omit<Message, 'id' | 'timestamp'>) => {
-    const newMsg: Message = {
-      ...msg,
-      id: `msg-${Date.now()}`,
-      timestamp: new Date().toISOString(),
-    };
+    const newMsg: Message = { ...msg, id: `msg-${Date.now()}`, timestamp: new Date().toISOString() };
     setMessages(prev => [...prev, newMsg]);
   };
 
   const getConversation = (userA: string, userB: string) =>
     messages
-      .filter(
-        m =>
-          (m.senderId === userA && m.receiverId === userB) ||
-          (m.senderId === userB && m.receiverId === userA)
-      )
+      .filter(m => (m.senderId === userA && m.receiverId === userB) || (m.senderId === userB && m.receiverId === userA))
       .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
 
+  const getRecentContacts = (userId: string) => {
+    const contactSet = new Set<string>();
+    messages
+      .filter(m => m.senderId === userId || m.receiverId === userId)
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+      .forEach(m => {
+        const other = m.senderId === userId ? m.receiverId : m.senderId;
+        contactSet.add(other);
+      });
+    return Array.from(contactSet);
+  };
+
   return (
-    <MessagesContext.Provider value={{ messages, sendMessage, getConversation }}>
+    <MessagesContext.Provider value={{ messages, sendMessage, getConversation, getRecentContacts }}>
       {children}
     </MessagesContext.Provider>
   );

@@ -61,8 +61,14 @@ a { color: inherit; text-decoration: none; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* ===== LANDING ===== */
-.main-landing {
+/*.main-landing {
   min-height: 100vh; background: linear-gradient(135deg, #EFF6FF 0%, #F0FDF4 50%, #C9ECF8 100%);
+  position: relative; overflow: hidden;
+  display: flex; flex-direction: column;
+}*/
+
+.main-landing {
+  min-height: 100vh; background: #ffffff;
   position: relative; overflow: hidden;
   display: flex; flex-direction: column;
 }
@@ -99,13 +105,14 @@ a { color: inherit; text-decoration: none; }
   padding: 32px 48px 48px; position: relative; z-index: 1;
 }
 .feature-card {
-  background: rgba(255,255,255,0.8); backdrop-filter: blur(10px);
+  background: #0574cc; backdrop-filter: blur(10px);
   border: 1px solid rgba(255,255,255,0.6); border-radius: var(--radius-lg);
   padding: 24px; max-width: 240px; text-align: center;
+  color: #52cc00
 }
 .feature-icon { font-size: 32px; margin-bottom: 10px; }
 .feature-card h3 { font-family: var(--font-display); font-size: 17px; margin-bottom: 6px; }
-.feature-card p { font-size: 13px; color: var(--text-mid); line-height: 1.6; }
+.feature-card p { font-size: 13px; color: var(--text-mid); line-height: 1.6; color: #fff;}
 
 /* ===== AUTH ===== */
 .auth-page {
@@ -541,3 +548,129 @@ select.form-input { appearance: auto; }
 .unavailable-card h2 { font-family: var(--font-display); font-size: 22px; font-weight: 600; margin-bottom: 12px; }
 .unavailable-card p { color: var(--text-mid); line-height: 1.65; }
 .unavailable-sub { margin-top: 8px; font-size: 13px; }
+/* ===== SEARCH ===== */
+.search-wrap { position: relative; margin-bottom: 4px; }
+.search-input-wrap { position: relative; display: flex; align-items: center; }
+.search-icon { position: absolute; left: 12px; width: 16px; height: 16px; color: var(--text-soft); pointer-events: none; }
+.search-input {
+  width: 100%; padding: 10px 14px 10px 38px; border: 2px solid var(--border); border-radius: 10px;
+  font-family: var(--font-body); font-size: 14px; color: var(--text-dark);
+  background: #fff; outline: none; transition: border-color 0.15s;
+}
+.search-input:focus { border-color: var(--primary); }
+.search-input-sm {
+  width: 100%; padding: 7px 12px; border: 1px solid var(--border); border-radius: 8px;
+  font-family: var(--font-body); font-size: 13px; margin-top: 8px; outline: none;
+}
+.search-dropdown {
+  background: #fff; border: 1px solid var(--border); border-radius: 10px;
+  box-shadow: var(--shadow-md); overflow: hidden; margin-top: 4px; z-index: 50;
+}
+.search-result-row {
+  display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+  cursor: pointer; transition: background 0.1s;
+}
+.search-result-row:hover { background: var(--primary-light); }
+.search-avatar {
+  width: 30px; height: 30px; border-radius: 50%; background: var(--primary-light);
+  color: var(--primary); display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 13px; flex-shrink: 0;
+}
+.search-result-name { font-size: 14px; font-weight: 600; }
+.search-result-sub { font-size: 11px; color: var(--text-soft); }
+
+/* ===== RISK LEVEL — CRITICAL ===== */
+.risk-btn--critical { color: #7C3AED; }
+.risk-btn--critical.risk-btn--selected { background: #F3E8FF; border-color: #A855F7; }
+
+/* ===== INVITE TAGS ===== */
+.tag-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.invite-tag {
+  display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px;
+  background: var(--primary-light); color: var(--primary); border-radius: 999px;
+  font-size: 12px; font-weight: 600;
+}
+.invite-tag button { background: none; border: none; cursor: pointer; font-size: 14px; line-height: 1; color: var(--primary); padding: 0; }
+.invite-tag--worker { background: var(--secondary-light); color: #166534; }
+.invite-tag--worker button { color: #166534; }
+
+/* ===== MODAL WIDE ===== */
+.modal--wide { max-width: 640px; }
+
+/* ===== DOCUMENTATION ===== */
+.doc-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+.doc-field-val { font-size: 14px; color: var(--text-dark); padding: 10px 0; border-bottom: 1px solid var(--border); }
+
+/* ===== CANS ===== */
+.cans-card {
+  border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 12px;
+}
+.cans-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.cans-domain { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-soft); }
+.cans-item-name { font-size: 14px; font-weight: 600; color: var(--text-dark); }
+.cans-rating { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 999px; white-space: nowrap; flex-shrink: 0; }
+.cans-notes { margin-top: 8px; }
+.cans-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-soft); margin-bottom: 4px; }
+.cans-text { font-size: 13px; color: var(--text-dark); line-height: 1.6; }
+
+/* ===== MEETUP SESSION ===== */
+.meetup-confirm-card, .meetup-active-card, .meetup-ended-card {
+  max-width: 520px; margin: 60px auto; background: #fff; border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 48px; text-align: center; box-shadow: var(--shadow-md);
+}
+.meetup-icon { font-size: 56px; margin-bottom: 16px; }
+.meetup-confirm-card h2, .meetup-active-card h2, .meetup-ended-card h2 {
+  font-family: var(--font-display); font-size: 24px; font-weight: 600; margin-bottom: 12px;
+}
+.meetup-confirm-card p, .meetup-ended-card p { color: var(--text-mid); line-height: 1.65; margin-bottom: 8px; }
+.meetup-actions { display: flex; gap: 12px; justify-content: center; margin-top: 28px; }
+.meetup-pulse {
+  width: 64px; height: 64px; border-radius: 50%; background: var(--primary);
+  margin: 0 auto 20px; animation: pulse-ring 1.5s ease-out infinite;
+  display: flex; align-items: center; justify-content: center;
+}
+.meetup-pulse::after { content: '🎥'; font-size: 24px; }
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 rgba(37,99,235,0.4); }
+  70% { box-shadow: 0 0 0 20px rgba(37,99,235,0); }
+  100% { box-shadow: 0 0 0 0 rgba(37,99,235,0); }
+}
+.meetup-with { color: var(--text-mid); margin-bottom: 8px; }
+.meetup-timer {
+  font-family: var(--font-mono); font-size: 48px; font-weight: 700;
+  color: var(--primary); margin: 16px 0; letter-spacing: 4px;
+}
+.meetup-ai-note { font-size: 13px; color: var(--text-soft); margin-bottom: 28px; background: var(--msg-ai); padding: 10px 16px; border-radius: 8px; }
+.meetup-ended-icon { font-size: 56px; margin-bottom: 16px; }
+.meetup-processing { padding: 24px 0; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.meetup-processing p { color: var(--text-mid); font-size: 14px; }
+.meetup-summary-box {
+  text-align: left; background: var(--msg-ai); border: 1px solid var(--accent-mint);
+  border-radius: 10px; padding: 16px; margin: 20px 0;
+}
+
+/* ===== CHILD QUICK NAV (orange for meetup) ===== */
+.child-nav-card--orange { border-color: #FED7AA; background: linear-gradient(135deg, #FFF7ED, #fff); }
+
+/* ===== ROLE INFO BANNER ===== */
+.role-info-banner {
+  display: flex; align-items: flex-start; gap: 12px; padding: 12px 16px;
+  background: var(--primary-light); border-radius: 10px; margin-bottom: 20px;
+  font-size: 12px; color: var(--text-dark);
+}
+.role-info-banner span { font-size: 22px; flex-shrink: 0; }
+
+/* ===== CHAT EMPTY ===== */
+.chat-empty {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  flex: 1; gap: 12px; padding: 40px; text-align: center; color: var(--text-soft);
+}
+
+/* ===== QUICK NAV (6-column for SW) ===== */
+.quick-nav { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 28px; }
+@media (min-width: 900px) { .quick-nav { grid-template-columns: repeat(6, 1fr); } }
+
+/* ===== WELLBEING SECTION ===== */
+.wellbeing-section { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; display: flex; flex-direction: column; gap: 14px; }
+.wellbeing-title { font-family: var(--font-display); font-size: 17px; font-weight: 600; margin-bottom: 2px; }
+.wellbeing-sub { font-size: 12px; color: var(--text-soft); margin-bottom: 8px; }

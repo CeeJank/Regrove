@@ -1,8 +1,8 @@
-// This code indentifies the roles of the users from social worker and child.
-// Each roles will be granted different abilties in the website
+// This code identifies the roles of the users from social worker and child.
+// Each role will be granted different abilities in the website
 
 export type UserRole = 'social_worker' | 'child';
-export type RiskLevel = 'high' | 'medium' | 'low';
+export type RiskLevel = 'critical' | 'high' | 'medium' | 'low';
 
 export interface User {
   id: string;
@@ -24,6 +24,7 @@ export interface Child extends User {
 export interface SocialWorker extends User {
   role: 'social_worker';
   assignedChildIds: string[];
+  recentChildIds: string[];
 }
 
 export interface CheckIn {
@@ -32,6 +33,12 @@ export interface CheckIn {
   timestamp: string;
   mood: 1 | 2 | 3 | 4 | 5;
   events: string;
+  // Wellbeing questions
+  q1_sleep: string;
+  q2_safe: string;
+  q3_support: string;
+  q4_worry: string;
+  q5_proud: string;
 }
 
 export interface Message {
@@ -53,16 +60,7 @@ export interface CalendarEvent {
   workerIds: string[];
   childIds: string[];
   status: 'pending' | 'confirmed' | 'declined';
-}
-
-export interface Referral {
-  id: string;
-  fromWorkerId: string;
-  toWorkerId: string;
-  childId: string;
-  message: string;
-  status: 'pending' | 'accepted' | 'declined';
-  timestamp: string;
+  inviteStatuses?: Record<string, 'pending' | 'accepted' | 'declined'>;
 }
 
 export interface ActiveCase {
@@ -74,6 +72,49 @@ export interface ActiveCase {
   aiSummary: string;
   lastUpdated: string;
   checkIns: CheckIn[];
+  recentWorkerIds: string[];
+}
+
+export interface CANSItem {
+  id: string;
+  domain: string;
+  item: string;
+  rating: 0 | 1 | 2 | 3;
+  caseNotes: string;
+  actions: string;
+}
+
+export interface ChildDocumentation {
+  id: string;
+  childId: string;
+  fullName: string;
+  nricLast4: string;
+  dateOfBirth: string;
+  gender: string;
+  race: string;
+  nationality: string;
+  address: string;
+  parentContact: string;
+  school: string;
+  level: string;
+  hobbies: string;
+  cansItems: CANSItem[];
+  lastUpdated: string;
+  /** Youth Catalog summary — a brief overview written by the SW */
+  summary?: string;
+  /** Extra notes auto-populated from meetup sessions and messages */
+  extraNotes?: string;
+}
+
+export interface MeetupSession {
+  id: string;
+  childId: string;
+  workerId: string;
+  startTime: string;
+  endTime?: string;
+  aiTranscript: string;
+  aiSummary: string;
+  status: 'active' | 'ended';
 }
 
 export interface ChatSession {
