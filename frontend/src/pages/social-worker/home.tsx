@@ -96,6 +96,20 @@ const SWHome: React.FC = () => {
           );
         })}
       </div>
+
+      <div className="quick-nav">
+        {[
+          { to: '/sw/calendar', emoji: '📅', label: 'Calendar' },
+          { to: '/sw/messages', emoji: '💬', label: 'Messages' },
+          { to: '/sw/referrals', emoji: '🔄', label: 'Referrals' },
+          { to: '/sw/active-cases', emoji: '📋', label: 'Active Cases' },
+        ].map(item => (
+          <Link key={item.to} to={item.to} className="quick-nav-card">
+            <span className="quick-nav-emoji">{item.emoji}</span>
+            <span className="quick-nav-label">{item.label}</span>
+          </Link>
+        ))}
+      </div>
     </div>
   );
 };

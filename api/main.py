@@ -2,37 +2,26 @@ import os
 import tempfile
 import uuid
 
-<<<<<<< HEAD
 import requests
-=======
->>>>>>> d378dbf (some testing with transcription model)
 from faster_whisper import WhisperModel
 from flask import Flask, jsonify, request
 
 app = Flask(__name__)
 
 # choose model
-model_size = "base"
+model_size = "large-v2"
 
-<<<<<<< HEAD
 # Run on NVIDIA GPU
 model = WhisperModel(model_size, device="cuda", compute_type="float16")
 
 # For running on CPU
 # model = WhisperModel(model_size, device="cpu", compute_type="int8")
-<<<<<<< HEAD
 
 
 @app.route("/health", methods=["GET"])
 def health():
     return jsonify({"status": "ok", "service": "python-api"})
-=======
-# Run on CPU by default to prevent Docker compose blocking and GPU driver crashes
-model = WhisperModel(model_size, device="cpu", compute_type="int8")
->>>>>>> 5dd5147 (debugs and connected db to routes)
 
-# For running on NVIDIA GPU
-# model = WhisperModel(model_size, device="cuda", compute_type="float16")
 
 # temp endpoint for receiving from express
 @app.route("/transcribe", methods=["POST"])
@@ -87,65 +76,10 @@ def processRecording():
     os.unlink(md_path)
 
     # contents of transcript in object for res
-    return jsonify({
-        "transcription": markdown,
-        "language": info.language,
-        "duration": info.duration
-    }), 200
+    express_url = os.environ.get("EXPRESS_API_URL", "http://localhost:5000")
+    requests.post(f"{express_url}/new-endpoint", json={"transcription": markdown})
+    return jsonify({"status": "Processing the transcript"}), 202
 
 
-=======
-
-# temp endpoint for receiving from express
-@app.route("/transcribe", methods=["POST"])
-def processRecording():
-    # To receive the recording, JSON objects cannot be used because they only store text
-    # FormData() is to be used on expressjs side
-    # fetch(`${process.env.PYTHON_API_URL}/recording`, {
-    # method: 'POST',
-    # body: formData
-    # })
-    recording = request.files.get("audio")
-
-    if recording is None:
-        return jsonify({"Error": "no recording received!!"}), 400
-
-    # Check for not .mp4
-    if not recording.filename or not recording.filename.endswith(".mp4"):
-        return jsonify({"Error": "Recording not .mp4"}), 400
-
-    # uuid to generate tag for >1 requests, so the same file doesn't get overwritten
-    md_path = f"{uuid.uuid4()}.md"
-
-    # Temp file to store the recording because faster-whisper works under FFmpeg(C code) so it needs a real path
-    with tempfile.NamedTemporaryFile(
-        suffix=".mp4", delete=False
-    ) as tmp:  # don't delete the file after closing
-        recording.save(tmp)
-        tmp_path = tmp.name
-    try:
-        segments, info = model.transcribe(tmp_path, beam_size=5)
-
-        print("Recording is now being processed")
-
-        # create the md file for transcript
-        with open(md_path, "w") as f:
-            for segment in segments:
-                f.write(f"[{segment.start}s] {segment.text}\n")
-
-    finally:
-        os.unlink(tmp_path)
-
-    with open(md_path, "r") as f:
-        content = f.read()
-
-    os.unlink(md_path)
-
-    return jsonify({
-        "transcription": content
-        })
-
-
->>>>>>> d378dbf (some testing with transcription model)
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000, debug=False)

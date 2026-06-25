@@ -7,32 +7,32 @@ import footerImage1 from '../images/footer/Footer1.png';
 const MainPage: React.FC = () => {
   return (
     <div className="main-landing"
-    style={{ 
+    style={{
         backgroundColor: '#0574cc'
       }}>
 
       <header className="landing-header"
-      style={{ 
+      style={{
         backgroundColor: '#ffffff'
       }}>
         <div className="landing-logo">
-          <img 
+          <img
             src={logo} // Your imported logo
-            alt="Regrove logo" 
-            style={{ 
+            alt="Regrove logo"
+            style={{
             height: '100px',      // Adjust height here
             width: 'auto',       // Keeps proportions
             borderRadius: '25%',
             display: 'inline-block',
             verticalAlign: 'middle',
             marginRight: '8px'   // Space between image and text
-            }} 
+            }}
           />
         </div>
       </header>
 
       <section className="landing-hero"
-      style={{ 
+      style={{
         backgroundColor: '#ffffff'
       }}>
         <div className="hero-eyebrow">The safe space to grow</div>
@@ -51,7 +51,7 @@ const MainPage: React.FC = () => {
       </section>
 
       <section className="landing-features"
-      style={{ 
+      style={{
         backgroundColor: '#ffffff'
       }}>
         <div className="feature-card">
@@ -75,15 +75,15 @@ const MainPage: React.FC = () => {
           <p>Regrow, Redo & Regrove. Step by step. Hand in hand. Together we will succeed!</p>
         </div>
       </section>
-        
+
       <footer>
-        <img 
-          src={footerImage1} 
-          alt="Footer" 
-          style={{ 
+        <img
+          src={footerImage1}
+          alt="Footer"
+          style={{
             maxWidth: '100%',   // Prevents overflow on small screens
             height: 'auto'      // Keeps the original aspect ratio and size
-          }} 
+          }}
         />
       </footer>
     </div>

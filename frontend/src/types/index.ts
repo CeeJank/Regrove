@@ -1,8 +1,16 @@
+<<<<<<< HEAD
 // This code identifies the roles of the users from social worker and child.
 // Each role will be granted different abilities in the website
 
 export type UserRole = 'social_worker' | 'child';
 export type RiskLevel = 'critical' | 'high' | 'medium' | 'low';
+=======
+// This code indentifies the roles of the users from social worker and child.
+// Each roles will be granted different abilties in the website
+
+export type UserRole = 'social_worker' | 'child';
+export type RiskLevel = 'high' | 'medium' | 'low';
+>>>>>>> 5d704a3 (imported new frontend code and started rebuilding new backend routes)
 
 export interface User {
   id: string;
@@ -24,7 +32,10 @@ export interface Child extends User {
 export interface SocialWorker extends User {
   role: 'social_worker';
   assignedChildIds: string[];
+<<<<<<< HEAD
   recentChildIds: string[];
+=======
+>>>>>>> 5d704a3 (imported new frontend code and started rebuilding new backend routes)
 }
 
 export interface CheckIn {
@@ -33,12 +44,15 @@ export interface CheckIn {
   timestamp: string;
   mood: 1 | 2 | 3 | 4 | 5;
   events: string;
+<<<<<<< HEAD
   // Wellbeing questions
   q1_sleep: string;
   q2_safe: string;
   q3_support: string;
   q4_worry: string;
   q5_proud: string;
+=======
+>>>>>>> 5d704a3 (imported new frontend code and started rebuilding new backend routes)
 }
 
 export interface Message {
@@ -60,18 +74,36 @@ export interface CalendarEvent {
   workerIds: string[];
   childIds: string[];
   status: 'pending' | 'confirmed' | 'declined';
+<<<<<<< HEAD
   inviteStatuses?: Record<string, 'pending' | 'accepted' | 'declined'>;
+=======
+}
+
+export interface Referral {
+  id: string;
+  fromWorkerId: string;
+  toWorkerId: string;
+  childId: string;
+  message: string;
+  status: 'pending' | 'accepted' | 'declined';
+  timestamp: string;
+>>>>>>> 5d704a3 (imported new frontend code and started rebuilding new backend routes)
 }
 
 export interface ActiveCase {
   id: string;
   childId: string;
   workerId: string;
+<<<<<<< HEAD
+=======
+  name: string;          // youth's full name, returned directly from API
+>>>>>>> 5d704a3 (imported new frontend code and started rebuilding new backend routes)
   riskLevel: RiskLevel;
   notes: string;
   aiSummary: string;
   lastUpdated: string;
   checkIns: CheckIn[];
+<<<<<<< HEAD
   recentWorkerIds: string[];
 }
 
@@ -115,6 +147,8 @@ export interface MeetupSession {
   aiTranscript: string;
   aiSummary: string;
   status: 'active' | 'ended';
+=======
+>>>>>>> 5d704a3 (imported new frontend code and started rebuilding new backend routes)
 }
 
 export interface ChatSession {
@@ -130,4 +164,8 @@ export interface BotMessage {
   role: 'user' | 'assistant';
   content: string;
   timestamp: string;
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 5d704a3 (imported new frontend code and started rebuilding new backend routes)

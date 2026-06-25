@@ -1,27 +1,54 @@
+/*import { BrowserRouter, Route, Routes } from "react-router-dom";
+import ChildProfilePage from "./pages/ChildProfilePage";
+import DashboardPage from "./pages/DashboardPage";
+import HomePage from "./pages/HomePage";
+import RecordingPage from "./pages/RecordingPage";
+import YouthCataloguePage from "./pages/YouthCataloguePage";
+import CreateYouthProfilePage from "./pages/CreateYouthProfilePage";
+import LoginPage              from "./pages/LoginPage";
+
+// ProtectedRoute wraps routes that require an authenticated session.
+// It redirects to /login when no JWT is found in localStorage.
+import ProtectedRoute from "./components/ProtectedRoute";
+
+import "./styles/app.css";
+*/
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+
+// Contexts
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { CasesProvider } from './contexts/CasesContext';
 import { EventsProvider } from './contexts/EventsContext';
 import { MessagesProvider } from './contexts/MessagesContext';
 import { DocumentationProvider } from './contexts/DocumentationContext';
+
+// Layouts
 import { SocialWorkerLayout } from './components/layout/SocialWorkerLayout';
 import { ChildLayout } from './components/layout/ChildLayout';
+
+// Universal pages
 import MainPage from './pages/main';
 import LoginPage from './pages/login';
 import RegisterPage from './pages/register';
+
+// Social Worker pages
 import SWHome from './pages/social-worker/home';
 import SWCalendar from './pages/social-worker/calendar';
 import SWMessages from './pages/social-worker/messages';
 import ActiveCases from './pages/social-worker/activeCases';
-import ChildCatalog from './pages/social-worker/childCatalog';
+import YouthCatalog from './pages/social-worker/youthCatalog';
+
+// Child pages
 import ChildHome from './pages/child/home';
 import CheckIns from './pages/child/checkIns';
 import ChildMessages from './pages/child/messages';
 import ChildCalendar from './pages/child/calendar';
 import Chatbot from './pages/child/chatbot';
+
 import './index.css';
 
+// Route guards
 const ProtectedSWRoute = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth();
   if (!user) return <Navigate to="/login" replace />;
@@ -40,22 +67,26 @@ const AppRoutes = () => {
   const { user } = useAuth();
   return (
     <Routes>
+      {/* Universal */}
       <Route path="/" element={<MainPage />} />
       <Route path="/login" element={user ? <Navigate to={user.role === 'social_worker' ? '/sw/home' : '/child/home'} replace /> : <LoginPage />} />
       <Route path="/register" element={user ? <Navigate to={user.role === 'social_worker' ? '/sw/home' : '/child/home'} replace /> : <RegisterPage />} />
 
-      <Route path="/sw/home" element={<ProtectedSWRoute><SWHome /></ProtectedSWRoute>} />
-      <Route path="/sw/calendar" element={<ProtectedSWRoute><SWCalendar /></ProtectedSWRoute>} />
-      <Route path="/sw/messages" element={<ProtectedSWRoute><SWMessages /></ProtectedSWRoute>} />
-      <Route path="/sw/active-cases" element={<ProtectedSWRoute><ActiveCases /></ProtectedSWRoute>} />
-      <Route path="/sw/child-catalog" element={<ProtectedSWRoute><ChildCatalog /></ProtectedSWRoute>} />
+      {/* Social Worker */}
+      <Route path="/sw/home"          element={<ProtectedSWRoute><SWHome /></ProtectedSWRoute>} />
+      <Route path="/sw/calendar"      element={<ProtectedSWRoute><SWCalendar /></ProtectedSWRoute>} />
+      <Route path="/sw/messages"      element={<ProtectedSWRoute><SWMessages /></ProtectedSWRoute>} />
+      <Route path="/sw/active-cases"  element={<ProtectedSWRoute><ActiveCases /></ProtectedSWRoute>} />
+      <Route path="/sw/youth-catalog" element={<ProtectedSWRoute><YouthCatalog /></ProtectedSWRoute>} />
 
-      <Route path="/child/home" element={<ProtectedChildRoute><ChildHome /></ProtectedChildRoute>} />
+      {/* Child */}
+      <Route path="/child/home"      element={<ProtectedChildRoute><ChildHome /></ProtectedChildRoute>} />
       <Route path="/child/check-ins" element={<ProtectedChildRoute><CheckIns /></ProtectedChildRoute>} />
-      <Route path="/child/messages" element={<ProtectedChildRoute><ChildMessages /></ProtectedChildRoute>} />
-      <Route path="/child/calendar" element={<ProtectedChildRoute><ChildCalendar /></ProtectedChildRoute>} />
-      <Route path="/child/chatbot" element={<ProtectedChildRoute><Chatbot /></ProtectedChildRoute>} />
+      <Route path="/child/messages"  element={<ProtectedChildRoute><ChildMessages /></ProtectedChildRoute>} />
+      <Route path="/child/calendar"  element={<ProtectedChildRoute><ChildCalendar /></ProtectedChildRoute>} />
+      <Route path="/child/chatbot"   element={<ProtectedChildRoute><Chatbot /></ProtectedChildRoute>} />
 
+      {/* Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+<<<<<<< HEAD
 import { apiFetch } from '../../services/api';
+=======
+import { useCases } from '../../contexts/CasesContext';
+>>>>>>> 5d704a3 (imported new frontend code and started rebuilding new backend routes)
 
 const MOODS = [
   { value: 1 as const, emoji: '😄', label: 'Great' },
@@ -10,6 +14,7 @@ const MOODS = [
   { value: 5 as const, emoji: '😢', label: 'Struggling' },
 ];
 
+<<<<<<< HEAD
 const WELLBEING_QUESTIONS = [
   { key: 'q1_sleep', question: '😴 How did you sleep last night?' },
   { key: 'q2_safe', question: '🛡️ Do you feel safe at home and school?' },
@@ -58,6 +63,27 @@ const CheckIns: React.FC = () => {
     setEvents('');
     setAnswers({});
     setError('');
+=======
+const CheckIns: React.FC = () => {
+  const { user } = useAuth();
+  const { getCaseByChildId, addCheckIn } = useCases();
+  const [selectedMood, setSelectedMood] = useState<1|2|3|4|5|null>(null);
+  const [events, setEvents] = useState('');
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleSubmit = () => {
+    if (!user || selectedMood === null) return;
+    const userCase = getCaseByChildId(user.id);
+    if (!userCase) return;
+    addCheckIn(userCase.id, {
+      id: `ci-${Date.now()}`,
+      childId: user.id,
+      timestamp: new Date().toISOString(),
+      mood: selectedMood,
+      events,
+    });
+    setSubmitted(true);
+>>>>>>> 5d704a3 (imported new frontend code and started rebuilding new backend routes)
   };
 
   if (submitted) {
@@ -66,8 +92,15 @@ const CheckIns: React.FC = () => {
         <div className="checkin-success">
           <div className="checkin-success-emoji">🌟</div>
           <h2>Thanks for checking in!</h2>
+<<<<<<< HEAD
           <p>Your feelings have been noted. Your social worker can see this to better support you.</p>
           <button className="btn btn--primary" onClick={reset}>Check in again</button>
+=======
+          <p>Your feelings have been noted. Your social worker will be notified.</p>
+          <button className="btn btn--primary" onClick={() => { setSubmitted(false); setSelectedMood(null); setEvents(''); }}>
+            Check in again
+          </button>
+>>>>>>> 5d704a3 (imported new frontend code and started rebuilding new backend routes)
         </div>
       </div>
     );
@@ -80,9 +113,18 @@ const CheckIns: React.FC = () => {
 
       <div className="mood-picker">
         {MOODS.map(m => (
+<<<<<<< HEAD
           <button key={m.value} type="button"
             className={`mood-btn${selectedMood === m.value ? ' mood-btn--selected' : ''}`}
             onClick={() => setSelectedMood(m.value)}>
+=======
+          <button
+            key={m.value}
+            type="button"
+            className={`mood-btn${selectedMood === m.value ? ' mood-btn--selected' : ''}`}
+            onClick={() => setSelectedMood(m.value)}
+          >
+>>>>>>> 5d704a3 (imported new frontend code and started rebuilding new backend routes)
             <span className="mood-emoji">{m.emoji}</span>
             <span className="mood-label">{m.label}</span>
           </button>
@@ -91,6 +133,7 @@ const CheckIns: React.FC = () => {
 
       {selectedMood !== null && (
         <div className="checkin-extra">
+<<<<<<< HEAD
           <div className="form-group">
             <label className="form-label">What's been going on? (optional)</label>
             <textarea className="form-input" rows={3}
@@ -121,10 +164,28 @@ const CheckIns: React.FC = () => {
             {loading ? 'Submitting…' : 'Submit Check-In'}
           </button>
           <p className="checkin-privacy">🔒 Only your social worker can see your responses.</p>
+=======
+          <label className="form-label">Want to share what's been going on? (optional)</label>
+          <textarea
+            className="form-input"
+            rows={4}
+            placeholder="Tell us about something positive or challenging that happened today..."
+            value={events}
+            onChange={e => setEvents(e.target.value)}
+          />
+          <button className="btn btn--primary btn--lg checkin-submit" onClick={handleSubmit}>
+            Submit Check-In
+          </button>
+          <p className="checkin-privacy">🔒 Only your social worker can see this.</p>
+>>>>>>> 5d704a3 (imported new frontend code and started rebuilding new backend routes)
         </div>
       )}
     </div>
   );
 };
+<<<<<<< HEAD
 
 export default CheckIns;
+=======
+export default CheckIns;
+>>>>>>> 5d704a3 (imported new frontend code and started rebuilding new backend routes)

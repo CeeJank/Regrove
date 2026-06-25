@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useEvents } from '../../contexts/EventsContext';
+<<<<<<< HEAD
 import { useCases } from '../../contexts/CasesContext';
+=======
+>>>>>>> 5d704a3 (imported new frontend code and started rebuilding new backend routes)
 import { CalendarEvent } from '../../types';
 
 const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
+<<<<<<< HEAD
 const SWCalendar: React.FC = () => {
   const { user } = useAuth();
   const { events, createEvent, deleteEvent, getEventsForUser } = useEvents();
@@ -22,11 +26,28 @@ const SWCalendar: React.FC = () => {
     workerIds: user?.id ? [user.id] : [],
     childIds: [] as string[],
   });
+=======
+const MOCK_WORKERS: Record<string, string> = { 'worker-1': 'Sarah Chen', 'worker-2': 'Marcus Lee' };
+const MOCK_CHILDREN: Record<string, string> = { 'child-1': 'Alex Rivera', 'child-2': 'Jamie Tan', 'child-3': 'Sam Lim' };
+
+const SWCalendar: React.FC = () => {
+  const { user } = useAuth();
+  const { events, createEvent, deleteEvent, getEventsForUser } = useEvents();
+  const [current, setCurrent] = useState(new Date());
+  const [showCreate, setShowCreate] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [form, setForm] = useState({
+    title: '', date: '', startTime: '09:00', endTime: '10:00',
+    workerIds: ['worker-1', 'worker-2'], childIds: ['child-1'],
+  });
+  const [deleteMsg, setDeleteMsg] = useState('');
+>>>>>>> 5d704a3 (imported new frontend code and started rebuilding new backend routes)
 
   const year = current.getFullYear();
   const month = current.getMonth();
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
+<<<<<<< HEAD
   const userEvents = user ? getEventsForUser(user.id) : [];
 
   const eventsOnDay = (day: number) => {
@@ -59,11 +80,38 @@ const SWCalendar: React.FC = () => {
     } catch {
       setDeleteMsg('Failed to delete event.');
     }
+=======
+
+  const userEvents = user ? getEventsForUser(user.id) : [];
+
+  const eventsOnDay = (day: number) => {
+    const dateStr = `${year}-${String(month + 1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    return userEvents.filter(e => e.date === dateStr);
+  };
+
+  const handleCreate = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+    createEvent({
+      ...form,
+      organizerId: user.id,
+      status: 'pending',
+    });
+    setShowCreate(false);
+    setForm({ title: '', date: '', startTime: '09:00', endTime: '10:00', workerIds: ['worker-1', 'worker-2'], childIds: ['child-1'] });
+  };
+
+  const handleDelete = (evt: CalendarEvent) => {
+    if (!user) return;
+    const ok = deleteEvent(evt.id, user.id);
+    setDeleteMsg(ok ? 'Event deleted.' : 'Only the organizer can delete this event.');
+>>>>>>> 5d704a3 (imported new frontend code and started rebuilding new backend routes)
     setTimeout(() => setDeleteMsg(''), 3000);
   };
 
   const selectedEvents = selectedDate ? userEvents.filter(e => e.date === selectedDate) : [];
 
+<<<<<<< HEAD
   const childSuggestions = Object.entries(allChildren).filter(([id, c]) =>
     childSearch && c.name.toLowerCase().includes(childSearch.toLowerCase()) && !form.childIds.includes(id)
   ).slice(0, 5);
@@ -72,11 +120,14 @@ const SWCalendar: React.FC = () => {
     workerSearch && w.name.toLowerCase().includes(workerSearch.toLowerCase()) && !form.workerIds.includes(id)
   ).slice(0, 5);
 
+=======
+>>>>>>> 5d704a3 (imported new frontend code and started rebuilding new backend routes)
   return (
     <div className="page-content">
       <div className="page-header">
         <div>
           <h1 className="page-title">Calendar</h1>
+<<<<<<< HEAD
           <p className="page-sub">Manage events and sessions with your child.</p>
         </div>
         <button className="btn btn--primary" onClick={() => setShowCreate(true)}>+ Create Event</button>
@@ -104,6 +155,35 @@ const SWCalendar: React.FC = () => {
                 onClick={() => setSelectedDate(prev => prev === dateStr ? null : dateStr)}>
                 <span className="cal-day-num">{day}</span>
                 {dayEvts.slice(0,2).map(e => (
+=======
+          <p className="page-sub">Manage events and check-ins with your youth.</p>
+        </div>
+        <button className="btn btn--primary" onClick={() => setShowCreate(true)}>+ Create Event</button>
+      </div>
+      {deleteMsg && <div className="alert alert--info">{deleteMsg}</div>}
+      <div className="calendar-wrap">
+        <div className="cal-nav">
+          <button className="cal-nav-btn" onClick={() => setCurrent(new Date(year, month - 1, 1))}>‹</button>
+          <span className="cal-month-label">{MONTHS[month]} {year}</span>
+          <button className="cal-nav-btn" onClick={() => setCurrent(new Date(year, month + 1, 1))}>›</button>
+        </div>
+        <div className="cal-grid-header">{DAYS.map(d => <div key={d} className="cal-day-name">{d}</div>)}</div>
+        <div className="cal-grid">
+          {Array.from({ length: firstDay }).map((_, i) => <div key={`empty-${i}`} className="cal-cell cal-cell--empty" />)}
+          {Array.from({ length: daysInMonth }).map((_, i) => {
+            const day = i + 1;
+            const dateStr = `${year}-${String(month + 1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+            const dayEvts = eventsOnDay(day);
+            const isToday = new Date().toDateString() === new Date(year, month, day).toDateString();
+            return (
+              <div
+                key={day}
+                className={`cal-cell${isToday ? ' cal-cell--today' : ''}${selectedDate === dateStr ? ' cal-cell--selected' : ''}`}
+                onClick={() => setSelectedDate(prev => prev === dateStr ? null : dateStr)}
+              >
+                <span className="cal-day-num">{day}</span>
+                {dayEvts.slice(0, 2).map(e => (
+>>>>>>> 5d704a3 (imported new frontend code and started rebuilding new backend routes)
                   <div key={e.id} className={`cal-evt-pill cal-evt-pill--${e.status}`}>{e.title}</div>
                 ))}
                 {dayEvts.length > 2 && <div className="cal-more">+{dayEvts.length - 2} more</div>}
@@ -116,7 +196,13 @@ const SWCalendar: React.FC = () => {
       {selectedDate && (
         <div className="event-detail-panel">
           <h3 className="panel-title">Events on {selectedDate}</h3>
+<<<<<<< HEAD
           {selectedEvents.length === 0 ? <p className="empty-state">No events on this day.</p> : (
+=======
+          {selectedEvents.length === 0 ? (
+            <p className="empty-state">No events on this day.</p>
+          ) : (
+>>>>>>> 5d704a3 (imported new frontend code and started rebuilding new backend routes)
             selectedEvents.map(e => (
               <div key={e.id} className="event-detail-card">
                 <div className="event-detail-header">
@@ -124,10 +210,21 @@ const SWCalendar: React.FC = () => {
                   <span className={`status-chip status-chip--${e.status}`}>{e.status}</span>
                 </div>
                 <p className="event-time">{e.startTime} – {e.endTime}</p>
+<<<<<<< HEAD
                 <p className="event-attendees">Workers: {e.workerIds.map(id => allWorkers[id]?.name ?? id).join(', ')}</p>
                 <p className="event-attendees">Child: {e.childIds.map(id => allChildren[id]?.name ?? id).join(', ')}</p>
                 {user && e.organizerId === user.id && (
                   <button className="btn btn--danger btn--sm" style={{ marginTop: 8 }} onClick={() => handleDelete(e)}>Delete Event</button>
+=======
+                <p className="event-attendees">
+                  Workers: {e.workerIds.map(id => MOCK_WORKERS[id] ?? id).join(', ')}
+                </p>
+                <p className="event-attendees">
+                  Youth: {e.childIds.map(id => MOCK_CHILDREN[id] ?? id).join(', ')}
+                </p>
+                {user && e.organizerId === user.id && (
+                  <button className="btn btn--danger btn--sm" onClick={() => handleDelete(e)}>Delete</button>
+>>>>>>> 5d704a3 (imported new frontend code and started rebuilding new backend routes)
                 )}
               </div>
             ))
@@ -137,11 +234,19 @@ const SWCalendar: React.FC = () => {
 
       {showCreate && (
         <div className="modal-overlay" onClick={() => setShowCreate(false)}>
+<<<<<<< HEAD
           <div className="modal modal--wide" onClick={e => e.stopPropagation()}>
             <h2 className="modal-title">Create Event</h2>
             <form onSubmit={handleCreate} className="auth-form">
               <div className="form-group">
                 <label className="form-label">Event Title</label>
+=======
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <h2 className="modal-title">Create Event</h2>
+            <form onSubmit={handleCreate} className="auth-form">
+              <div className="form-group">
+                <label className="form-label">Title</label>
+>>>>>>> 5d704a3 (imported new frontend code and started rebuilding new backend routes)
                 <input className="form-input" required value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} />
               </div>
               <div className="form-row">
@@ -158,6 +263,7 @@ const SWCalendar: React.FC = () => {
                   <input className="form-input" type="time" value={form.endTime} onChange={e => setForm(f => ({ ...f, endTime: e.target.value }))} />
                 </div>
               </div>
+<<<<<<< HEAD
 
               <div className="form-group">
                 <label className="form-label">Add Child (required, min. 1)</label>
@@ -222,6 +328,12 @@ const SWCalendar: React.FC = () => {
               <div className="modal-actions">
                 <button type="button" className="btn btn--outline" onClick={() => setShowCreate(false)}>Cancel</button>
                 <button type="submit" className="btn btn--primary">Create Event</button>
+=======
+              <p className="form-note">Inviting: Sarah Chen, Marcus Lee (workers) · Alex Rivera (youth). Invites sent upon creation.</p>
+              <div className="modal-actions">
+                <button type="button" className="btn btn--outline" onClick={() => setShowCreate(false)}>Cancel</button>
+                <button type="submit" className="btn btn--primary">Create</button>
+>>>>>>> 5d704a3 (imported new frontend code and started rebuilding new backend routes)
               </div>
             </form>
           </div>
@@ -230,5 +342,9 @@ const SWCalendar: React.FC = () => {
     </div>
   );
 };
+<<<<<<< HEAD
 
 export default SWCalendar;
+=======
+export default SWCalendar;
+>>>>>>> 5d704a3 (imported new frontend code and started rebuilding new backend routes)

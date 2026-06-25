@@ -648,29 +648,38 @@ select.form-input { appearance: auto; }
   text-align: left; background: var(--msg-ai); border: 1px solid var(--accent-mint);
   border-radius: 10px; padding: 16px; margin: 20px 0;
 }
+.mood-btn:hover { border-color: var(--secondary); background: var(--secondary-light); }
+.mood-btn--selected { border-color: var(--secondary); background: var(--secondary-light); transform: scale(1.05); }
+.mood-emoji { font-size: 32px; }
+.mood-label { font-size: 12px; font-weight: 600; color: var(--text-mid); }
+.checkin-extra { display: flex; flex-direction: column; gap: 12px; }
+.checkin-submit { margin-top: 8px; }
+.checkin-privacy { font-size: 12px; color: var(--text-soft); text-align: center; }
+.checkin-success { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 60px 24px; gap: 16px; }
+.checkin-success-emoji { font-size: 56px; }
+.checkin-success h2 { font-family: var(--font-display); font-size: 24px; font-weight: 600; }
+.checkin-success p { color: var(--text-mid); max-width: 320px; }
 
-/* ===== CHILD QUICK NAV (orange for meetup) ===== */
-.child-nav-card--orange { border-color: #FED7AA; background: linear-gradient(135deg, #FFF7ED, #fff); }
-
-/* ===== ROLE INFO BANNER ===== */
-.role-info-banner {
-  display: flex; align-items: flex-start; gap: 12px; padding: 12px 16px;
-  background: var(--primary-light); border-radius: 10px; margin-bottom: 20px;
-  font-size: 12px; color: var(--text-dark);
+/* ===== CHATBOT ===== */
+.chatbot-layout {
+  display: grid; grid-template-columns: 240px 1fr;
+  height: 100vh; overflow: hidden;
 }
-.role-info-banner span { font-size: 22px; flex-shrink: 0; }
-
-/* ===== CHAT EMPTY ===== */
-.chat-empty {
+.chatbot-sidebar { border-right: 1px solid var(--border); background: #fff; overflow-y: auto; }
+.chatbot-sidebar-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 16px 14px; border-bottom: 1px solid var(--border); }
+.chatbot-sidebar-header h2 { font-family: var(--font-display); font-size: 16px; font-weight: 600; }
+.chatbot-empty {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  flex: 1; gap: 12px; padding: 40px; text-align: center; color: var(--text-soft);
+  gap: 14px; height: 100%; padding: 40px; text-align: center;
 }
-
-/* ===== QUICK NAV (6-column for SW) ===== */
-.quick-nav { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 28px; }
-@media (min-width: 900px) { .quick-nav { grid-template-columns: repeat(6, 1fr); } }
-
-/* ===== WELLBEING SECTION ===== */
-.wellbeing-section { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; display: flex; flex-direction: column; gap: 14px; }
-.wellbeing-title { font-family: var(--font-display); font-size: 17px; font-weight: 600; margin-bottom: 2px; }
-.wellbeing-sub { font-size: 12px; color: var(--text-soft); margin-bottom: 8px; }
+.chatbot-empty-icon { font-size: 56px; }
+.chatbot-empty h2 { font-family: var(--font-display); font-size: 22px; font-weight: 600; }
+.chatbot-empty p { color: var(--text-mid); max-width: 300px; line-height: 1.6; }
+.chatbot-avatar { font-size: 24px; }
+.chatbot-starter { background: var(--msg-ai); border: 1px solid var(--accent-mint); border-radius: 14px 14px 14px 4px; padding: 14px 18px; max-width: 70%; font-size: 14px; color: var(--text-dark); }
+.chatbot-unavailable { display: flex; align-items: center; justify-content: center; min-height: 80vh; }
+.unavailable-card { background: #fff; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 48px; text-align: center; max-width: 420px; }
+.unavailable-icon { font-size: 56px; margin-bottom: 16px; }
+.unavailable-card h2 { font-family: var(--font-display); font-size: 22px; font-weight: 600; margin-bottom: 12px; }
+.unavailable-card p { color: var(--text-mid); line-height: 1.65; }
+.unavailable-sub { margin-top: 8px; font-size: 13px; }

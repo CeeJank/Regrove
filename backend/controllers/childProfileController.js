@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 const { getChildProfileById } = require('../models/childProfileModel');
-=======
-const { getChildProfileById } = require("../models/childProfileModel");
->>>>>>> 5dd5147 (debugs and connected db to routes)
 
 exports.getChildProfileById = async (req, res) => {
   try {

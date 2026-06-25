@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { ActiveCase, CheckIn, RiskLevel, User } from '../types';
+import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { ActiveCase, CheckIn, RiskLevel } from '../types';
 import { apiFetch } from '../services/api';
+import { fetchDashboard, DashboardStats } from '../services/casesService';
 import { useAuth } from './AuthContext';
 
 export type ChildRecord = { name: string; email: string; username: string; dateOfBirth: string };
@@ -14,11 +15,19 @@ export interface CreateChildForm {
   dateOfBirth: string;
 }
 
+interface ActivePayload {
+  cases?: ActiveCase[];
+  children?: Record<string, ChildRecord>;
+  workers?: Record<string, WorkerRecord>;
+}
+
 interface CasesContextType {
   cases: ActiveCase[];
+  stats: DashboardStats | null;
   allChildren: Record<string, ChildRecord>;
   allWorkers: Record<string, WorkerRecord>;
   loading: boolean;
+  error: string | null;
   addCheckIn: (caseId: string, checkIn: CheckIn) => void;
   updateAiSummary: (caseId: string, summary: string) => void;
   updateRiskLevel: (caseId: string, level: RiskLevel) => void;
@@ -29,58 +38,154 @@ interface CasesContextType {
   updateRecentInteraction: (workerId: string, childId: string) => void;
   getRecentChildren: (workerId: string) => string[];
   appendMeetupSummary: (childId: string, summary: string) => void;
+  refresh: () => Promise<void>;
 }
 
 const CasesContext = createContext<CasesContextType | undefined>(undefined);
 
+const ensureCaseDefaults = (c: ActiveCase): ActiveCase => ({
+  ...c,
+  name: c.name ?? '',
+  notes: c.notes ?? '',
+  aiSummary: c.aiSummary ?? '',
+  lastUpdated: c.lastUpdated ?? new Date().toISOString(),
+  checkIns: c.checkIns ?? [],
+  recentWorkerIds: c.recentWorkerIds ?? [],
+});
+
+const computeStatsFromCases = (items: ActiveCase[]): DashboardStats => ({
+  totalCases: items.length,
+  highRisk: items.filter(c => c.riskLevel === 'high' || c.riskLevel === 'critical').length,
+  mediumRisk: items.filter(c => c.riskLevel === 'medium').length,
+  lowRisk: items.filter(c => c.riskLevel === 'low').length,
+});
+
 export const CasesProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
   const [cases, setCases] = useState<ActiveCase[]>([]);
+  const [stats, setStats] = useState<DashboardStats | null>(null);
   const [allChildren, setAllChildren] = useState<Record<string, ChildRecord>>({});
   const [allWorkers, setAllWorkers] = useState<Record<string, WorkerRecord>>({});
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [recentMap, setRecentMap] = useState<Record<string, string[]>>({});
 
-  useEffect(() => {
-    if (!user) return;
+  const load = async () => {
+    if (!user) {
+      setCases([]);
+      setStats(null);
+      setAllChildren({});
+      setAllWorkers({});
+      setError(null);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
-    apiFetch<{ cases: ActiveCase[]; children?: Record<string, ChildRecord>; workers?: Record<string, WorkerRecord> }>('/active/')
-      .then(data => {
-        setCases(data.cases ?? (Array.isArray(data) ? (data as ActiveCase[]) : []));
-        if (data.children) setAllChildren(data.children);
-        if (data.workers) setAllWorkers(data.workers);
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    setError(null);
+
+    try {
+      const [activeResult, dashboardResult] = await Promise.allSettled([
+        apiFetch<ActivePayload | ActiveCase[]>('/active/'),
+        user.role === 'social_worker' ? fetchDashboard() : Promise.resolve(null),
+      ]);
+
+      let nextCases: ActiveCase[] = [];
+      let nextStats: DashboardStats | null = null;
+      let nextChildren: Record<string, ChildRecord> = {};
+      let nextWorkers: Record<string, WorkerRecord> = {};
+      let loadError: string | null = null;
+
+      if (activeResult.status === 'fulfilled') {
+        const activeData = activeResult.value;
+        if (Array.isArray(activeData)) {
+          nextCases = activeData.map(ensureCaseDefaults);
+        } else {
+          nextCases = (activeData.cases ?? []).map(ensureCaseDefaults);
+          nextChildren = activeData.children ?? {};
+          nextWorkers = activeData.workers ?? {};
+        }
+      } else {
+        loadError = activeResult.reason instanceof Error ? activeResult.reason.message : 'Failed to load cases';
+      }
+
+      if (dashboardResult.status === 'fulfilled' && dashboardResult.value) {
+        const dashboardData = dashboardResult.value;
+        const dashboardCases = dashboardData.cases.map(ensureCaseDefaults);
+
+        nextCases = nextCases.length > 0
+          ? nextCases.map(activeCase => {
+              const dashboardCase = dashboardCases.find(c => c.childId === activeCase.childId || c.id === activeCase.id);
+              return dashboardCase ? ensureCaseDefaults({ ...dashboardCase, ...activeCase }) : activeCase;
+            })
+          : dashboardCases;
+
+        setStats(dashboardData.stats);
+      } else if (nextCases.length > 0) {
+        nextStats = computeStatsFromCases(nextCases);
+        setStats(nextStats);
+      } else {
+        setStats(null);
+      }
+
+      if (dashboardResult.status === 'rejected' && !nextCases.length) {
+        loadError = dashboardResult.reason instanceof Error ? dashboardResult.reason.message : 'Failed to load cases';
+      }
+
+      setCases(nextCases);
+      setAllChildren(nextChildren);
+      setAllWorkers(nextWorkers);
+      setError(loadError);
+    } catch (err) {
+      setCases([]);
+      setStats(null);
+      setAllChildren({});
+      setAllWorkers({});
+      setError(err instanceof Error ? err.message : 'Failed to load cases');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    void load();
   }, [user?.id]);
 
   const addCheckIn = (caseId: string, checkIn: CheckIn) => {
-    setCases(prev => prev.map(c =>
-      c.id === caseId
-        ? { ...c, checkIns: [...c.checkIns, checkIn], lastUpdated: new Date().toISOString() }
-        : c
-    ));
+    setCases(prev =>
+      prev.map(c =>
+        c.id === caseId
+          ? { ...c, checkIns: [...c.checkIns, checkIn], lastUpdated: new Date().toISOString() }
+          : c
+      )
+    );
   };
 
   const updateAiSummary = (caseId: string, summary: string) => {
-    setCases(prev => prev.map(c =>
-      c.id === caseId ? { ...c, aiSummary: summary, lastUpdated: new Date().toISOString() } : c
-    ));
+    setCases(prev =>
+      prev.map(c =>
+        c.id === caseId ? { ...c, aiSummary: summary, lastUpdated: new Date().toISOString() } : c
+      )
+    );
   };
 
   const updateRiskLevel = (caseId: string, level: RiskLevel) => {
-    setCases(prev => prev.map(c => c.id === caseId ? { ...c, riskLevel: level } : c));
+    setCases(prev =>
+      prev.map(c => (c.id === caseId ? { ...c, riskLevel: level } : c))
+    );
   };
 
   const updateNotes = (caseId: string, notes: string) => {
-    setCases(prev => prev.map(c => c.id === caseId ? { ...c, notes } : c));
+    setCases(prev =>
+      prev.map(c => (c.id === caseId ? { ...c, notes } : c))
+    );
   };
 
   const removeCase = async (caseId: string) => {
-    const c = cases.find(cs => cs.id === caseId);
-    if (!c) return;
-    await apiFetch(`/cans_case/${c.childId}`, { method: 'DELETE' });
-    setCases(prev => prev.filter(cs => cs.id !== caseId));
+    const activeCase = cases.find(c => c.id === caseId);
+    if (!activeCase) return;
+    await apiFetch(`/cans_case/${activeCase.childId}`, { method: 'DELETE' });
+    setCases(prev => prev.filter(c => c.id !== caseId));
   };
 
   const getCaseByChildId = (childId: string) => cases.find(c => c.childId === childId);
@@ -90,6 +195,7 @@ export const CasesProvider = ({ children }: { children: ReactNode }) => {
       method: 'POST',
       body: JSON.stringify(form),
     });
+
     setAllChildren(prev => ({
       ...prev,
       [created.id]: {
@@ -99,6 +205,7 @@ export const CasesProvider = ({ children }: { children: ReactNode }) => {
         dateOfBirth: created.dateOfBirth,
       },
     }));
+
     if (user) {
       setRecentMap(prev => {
         const list = prev[user.id] ?? [];
@@ -117,20 +224,34 @@ export const CasesProvider = ({ children }: { children: ReactNode }) => {
   const getRecentChildren = (workerId: string) => recentMap[workerId] ?? [];
 
   const appendMeetupSummary = (childId: string, summary: string) => {
-    const c = cases.find(cs => cs.childId === childId);
-    if (c) {
-      const existing = c.aiSummary ? `${c.aiSummary}\n\n` : '';
-      updateAiSummary(c.id, `${existing}[Meetup Session] ${summary}`);
-    }
+    const activeCase = cases.find(c => c.childId === childId);
+    if (!activeCase) return;
+    const existing = activeCase.aiSummary ? `${activeCase.aiSummary}\n\n` : '';
+    updateAiSummary(activeCase.id, `${existing}[Meetup Session] ${summary}`);
   };
 
   return (
-    <CasesContext.Provider value={{
-      cases, allChildren, allWorkers, loading,
-      addCheckIn, updateAiSummary, updateRiskLevel, updateNotes,
-      removeCase, getCaseByChildId, addChildAccount,
-      updateRecentInteraction, getRecentChildren, appendMeetupSummary,
-    }}>
+    <CasesContext.Provider
+      value={{
+        cases,
+        stats,
+        allChildren,
+        allWorkers,
+        loading,
+        error,
+        addCheckIn,
+        updateAiSummary,
+        updateRiskLevel,
+        updateNotes,
+        removeCase,
+        getCaseByChildId,
+        addChildAccount,
+        updateRecentInteraction,
+        getRecentChildren,
+        appendMeetupSummary,
+        refresh: load,
+      }}
+    >
       {children}
     </CasesContext.Provider>
   );

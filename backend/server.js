@@ -14,9 +14,9 @@ if (!process.env.JWT_SECRET) {
 
 const express = require('express');
 const cors = require('cors');
+const routes = require('./routes');
+const http = require('http');
 
-// Central route index — all /api/* routes are registered there
-const routes = require('./routes/indexRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
