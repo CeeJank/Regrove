@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useCases } from '../../contexts/CasesContext';
+import { useCases, CreateChildForm } from '../../contexts/CasesContext';
 import { useDocumentation } from '../../contexts/DocumentationContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { RiskLevel, CANSItem } from '../../types';
@@ -30,7 +30,7 @@ const ActiveCases: React.FC = () => {
   const {
     cases, allChildren, updateRiskLevel, updateNotes,
     removeCase, updateRecentInteraction, getRecentChildren,
-    appendMeetupSummary,
+    appendMeetupSummary, addChildAccount,
   } = useCases();
   const { docs, updateCANS, appendMeetupNotes } = useDocumentation();
   const { user } = useAuth();
@@ -53,6 +53,14 @@ const ActiveCases: React.FC = () => {
   const [confirmRemove, setConfirmRemove] = useState(false);
   const [removeEmail,   setRemoveEmail]   = useState('');
   const [removeError,   setRemoveError]   = useState('');
+
+  // ── Create Child Profile ──────────────────────────────────────
+  const [showCreateChild, setShowCreateChild] = useState(false);
+  const [createChildForm, setCreateChildForm] = useState<CreateChildForm>({
+    fullName: '', username: '', email: '', password: '', dateOfBirth: '',
+  });
+  const [createChildError, setCreateChildError] = useState('');
+  const [createChildLoading, setCreateChildLoading] = useState(false);
 
   // ── CANS ──────────────────────────────────────────────────────
   const [showAddCANS, setShowAddCANS] = useState(false);
@@ -119,6 +127,30 @@ const ActiveCases: React.FC = () => {
     notify('CANS item added.');
   };
 
+  // ── Create child helpers ──────────────────────────────────────
+  const handleCreateChild = async () => {
+    if (!createChildForm.fullName.trim()) {
+      setCreateChildError('Full name is required.');
+      return;
+    }
+    if (createChildForm.email && !createChildForm.password) {
+      setCreateChildError('Password is required when an email is provided.');
+      return;
+    }
+    setCreateChildLoading(true);
+    setCreateChildError('');
+    try {
+      await addChildAccount(createChildForm);
+      setShowCreateChild(false);
+      setCreateChildForm({ fullName: '', username: '', email: '', password: '', dateOfBirth: '' });
+      notify('Child profile created.');
+    } catch (err) {
+      setCreateChildError(err instanceof Error ? err.message : 'Failed to create child profile.');
+    } finally {
+      setCreateChildLoading(false);
+    }
+  };
+
   // ── Meetup helpers ────────────────────────────────────────────
   const startSession = async () => {
     if (!activeCase) return;
@@ -159,9 +191,18 @@ const ActiveCases: React.FC = () => {
       {/* ── Sidebar ── */}
       <aside className="cases-sidebar">
         <div style={{ padding: '16px 18px 8px' }}>
-          <h2 className="cases-sidebar-title" style={{ padding: 0, borderBottom: 'none', marginBottom: 10 }}>
-            Active Cases
-          </h2>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+            <h2 className="cases-sidebar-title" style={{ padding: 0, borderBottom: 'none', margin: 0 }}>
+              Active Cases
+            </h2>
+            <button
+              className="btn btn--outline btn--sm"
+              title="Create child profile"
+              onClick={() => { setCreateChildForm({ fullName: '', username: '', email: '', password: '', dateOfBirth: '' }); setCreateChildError(''); setShowCreateChild(true); }}
+            >
+              + New
+            </button>
+          </div>
           <ChildSearchBar onSelect={handleSearch} placeholder="Search child..." />
         </div>
         <div style={{ borderTop: '1px solid var(--border)', marginTop: 8 }}>
@@ -449,6 +490,75 @@ const ActiveCases: React.FC = () => {
             <div className="modal-actions">
               <button className="btn btn--outline" onClick={() => { setConfirmRemove(false); setRemoveEmail(''); setRemoveError(''); }}>Cancel</button>
               <button className="btn btn--danger" onClick={handleRemove}>Confirm Remove</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Create Child Profile modal ── */}
+      {showCreateChild && (
+        <div className="modal-overlay" onClick={() => setShowCreateChild(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <h2 className="modal-title">Create Child Profile</h2>
+            <div className="auth-form">
+              <div className="form-group">
+                <label className="form-label">Full Name <span style={{ color: '#B91C1C' }}>*</span></label>
+                <input
+                  className="form-input"
+                  placeholder="e.g. Alex Tan"
+                  value={createChildForm.fullName}
+                  onChange={e => setCreateChildForm(f => ({ ...f, fullName: e.target.value }))}
+                />
+              </div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label className="form-label">Email (optional)</label>
+                  <input
+                    className="form-input"
+                    type="email"
+                    placeholder="child@example.com"
+                    value={createChildForm.email}
+                    onChange={e => setCreateChildForm(f => ({ ...f, email: e.target.value }))}
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Password {createChildForm.email && <span style={{ color: '#B91C1C' }}>*</span>}</label>
+                  <input
+                    className="form-input"
+                    type="password"
+                    placeholder="Min. 8 characters"
+                    value={createChildForm.password}
+                    onChange={e => setCreateChildForm(f => ({ ...f, password: e.target.value }))}
+                  />
+                </div>
+              </div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label className="form-label">Username (optional)</label>
+                  <input
+                    className="form-input"
+                    placeholder="e.g. alextan"
+                    value={createChildForm.username}
+                    onChange={e => setCreateChildForm(f => ({ ...f, username: e.target.value }))}
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Date of Birth (optional)</label>
+                  <input
+                    className="form-input"
+                    type="date"
+                    value={createChildForm.dateOfBirth}
+                    onChange={e => setCreateChildForm(f => ({ ...f, dateOfBirth: e.target.value }))}
+                  />
+                </div>
+              </div>
+              {createChildError && <p className="form-error">{createChildError}</p>}
+              <div className="modal-actions">
+                <button className="btn btn--outline" onClick={() => setShowCreateChild(false)} disabled={createChildLoading}>Cancel</button>
+                <button className="btn btn--primary" onClick={handleCreateChild} disabled={createChildLoading}>
+                  {createChildLoading ? 'Creating…' : 'Create Profile'}
+                </button>
+              </div>
             </div>
           </div>
         </div>

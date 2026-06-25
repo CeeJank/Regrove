@@ -104,6 +104,20 @@ The comparison used:
 
 - [agent.md](/home/cj/ide/Regrove/agent.md:1) is directionally correct about the transcription/summarization gap, but it understates how broken the active route surface is. The repo does not just have “missing summarization”; it also has active frontend pages that call incorrect or nonexistent endpoints for auth, events, cases, and check-ins.
 
+## Unused Backend Endpoints (Mounted but Never Called from Frontend)
+
+These routes are registered in the Express router and reachable by the server, but no frontend code ever calls them. They are dead weight that can mislead future developers or hide missing UI features.
+
+- **`POST /api/session/start`** (no `:childId` param) — [backend/routes/sessionAudioRoutes.js](/home/cj/ide/Regrove/backend/routes/sessionAudioRoutes.js:1) registers this alongside `POST /api/session/start/:childId`. The frontend in [frontend/src/pages/social-worker/activeCases.tsx](/home/cj/ide/Regrove/frontend/src/pages/social-worker/activeCases.tsx:126) only ever calls the parameterized form. The body-input version is unreachable from the UI.
+
+- **`POST /api/session/transcribe`** — Defined in [backend/routes/sessionAudioRoutes.js](/home/cj/ide/Regrove/backend/routes/sessionAudioRoutes.js:1) and handled by [backend/controllers/sessionAudioController.js](/home/cj/ide/Regrove/backend/controllers/sessionAudioController.js:1), which forwards audio to the Python sidecar. No frontend page or service ever calls this route. Audio transcription has no UI entry point.
+
+- **`POST /api/users/worker`** — Defined in [backend/routes/userRoutes.js](/home/cj/ide/Regrove/backend/routes/userRoutes.js:1) and handled by [backend/controllers/userController.js](/home/cj/ide/Regrove/backend/controllers/userController.js:1). Intended for admin-only worker account creation. No frontend page, form, or service calls this route. There is no admin UI.
+
+- **`POST /api/chat/message`** and **`GET /api/chat/:conversationId`** — Both legacy endpoints defined in [backend/routes/chat.js](/home/cj/ide/Regrove/backend/routes/chat.js:1) and marked as deprecated in comments. The frontend has entirely migrated to `/api/conversations` and `/api/messages`. These routes are dead but still mounted and consuming a handler.
+
+- **`GET /api/conversations/:id/transcript`** and **`GET /api/conversations/:id/transcript/download`** — Defined in [backend/routes/conversationRoutes.js](/home/cj/ide/Regrove/backend/routes/conversationRoutes.js:1). No frontend page or service fetches or downloads transcripts. The transcript export feature has no UI entry point.
+
 ## Summary
 
 The project currently has three overlapping states:

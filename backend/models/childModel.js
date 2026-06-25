@@ -79,6 +79,15 @@ exports.getAllChildProfiles = async () => {
   return result.rows;
 };
 
+exports.assignChildToWorker = async (workerId, childId) => {
+  await pool.query(
+    `INSERT INTO worker_youth_assignments (worker_id, youth_id, assigned_at)
+     VALUES ($1, $2, NOW())
+     ON CONFLICT (worker_id, youth_id) DO NOTHING`,
+    [workerId, childId]
+  );
+};
+
 exports.getChildProfileRecordById = async (id) => {
   const result = await pool.query(
     `SELECT id, full_name, age, school, interests, category, status, latest_risk_level, created_at, updated_at

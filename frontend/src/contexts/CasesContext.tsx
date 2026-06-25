@@ -147,10 +147,12 @@ export const CasesProvider = ({ children }: { children: ReactNode }) => {
       }),
     });
     const created = createdResponse.data;
+    const childId = String(created.id);
+
     setAllChildren(prev => ({
       ...prev,
-      [String(created.id)]: {
-        profileId: String(created.id),
+      [childId]: {
+        profileId: childId,
         userId: created.user_id ? String(created.user_id) : '',
         name: created.full_name,
         email: form.email,
@@ -158,10 +160,27 @@ export const CasesProvider = ({ children }: { children: ReactNode }) => {
         dateOfBirth: form.dateOfBirth,
       },
     }));
+
+    setCases(prev => [...prev, {
+      id: childId,
+      childId,
+      workerId: user?.id ?? '',
+      name: created.full_name,
+      age: null,
+      school: null,
+      category: null,
+      riskLevel: 'low',
+      notes: '',
+      aiSummary: '',
+      lastUpdated: new Date().toISOString(),
+      checkIns: [],
+      notesHistory: [],
+    }]);
+
     if (user) {
       setRecentMap(prev => {
         const list = prev[user.id] ?? [];
-        return { ...prev, [user.id]: [String(created.id), ...list.filter(id => id !== String(created.id))] };
+        return { ...prev, [user.id]: [childId, ...list.filter(id => id !== childId)] };
       });
     }
   };

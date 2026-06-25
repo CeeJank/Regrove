@@ -1,4 +1,4 @@
-const { createChildProfileRecord, getAllChildProfiles, getChildProfileRecordById } = require('../models/childModel');
+const { createChildProfileRecord, getAllChildProfiles, getChildProfileRecordById, assignChildToWorker } = require('../models/childModel');
 
 exports.createChildProfile = async (req, res) => {
   try {
@@ -10,6 +10,11 @@ exports.createChildProfile = async (req, res) => {
     }
 
     const child = await createChildProfileRecord({ ...req.body, full_name: resolvedFullName });
+
+    if (req.user?.workerId) {
+      await assignChildToWorker(req.user.workerId, child.id);
+    }
+
     return res.status(201).json({ success: true, data: child });
   } catch (error) {
     console.error('createChildProfile error:', error);
