@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { ActiveCase, CheckIn, RiskLevel } from '../types';
+<<<<<<< HEAD
 import { apiFetch } from '../services/api';
 import { fetchDashboard, DashboardStats } from '../services/casesService';
 import { useAuth } from './AuthContext';
@@ -20,6 +21,9 @@ interface ActivePayload {
   children?: Record<string, ChildRecord>;
   workers?: Record<string, WorkerRecord>;
 }
+=======
+import { fetchDashboard, DashboardStats, patchRiskLevel, patchNotes } from '../services/casesService';
+>>>>>>> a61d0e1 (added dashboard and child profile routes along with child-profile frontend logic and related components)
 
 interface CasesContextType {
   cases: ActiveCase[];
@@ -30,9 +34,15 @@ interface CasesContextType {
   error: string | null;
   addCheckIn: (caseId: string, checkIn: CheckIn) => void;
   updateAiSummary: (caseId: string, summary: string) => void;
+<<<<<<< HEAD
   updateRiskLevel: (caseId: string, level: RiskLevel) => void;
   updateNotes: (caseId: string, notes: string) => void;
   removeCase: (caseId: string) => Promise<void>;
+=======
+  updateRiskLevel: (caseId: string, level: RiskLevel) => Promise<void>;
+  updateNotes: (caseId: string, notes: string) => Promise<void>;
+  removeCase: (caseId: string) => void;
+>>>>>>> a61d0e1 (added dashboard and child profile routes along with child-profile frontend logic and related components)
   getCaseByChildId: (childId: string) => ActiveCase | undefined;
   addChildAccount: (form: CreateChildForm) => Promise<void>;
   updateRecentInteraction: (workerId: string, childId: string) => void;
@@ -169,16 +179,31 @@ export const CasesProvider = ({ children }: { children: ReactNode }) => {
     );
   };
 
-  const updateRiskLevel = (caseId: string, level: RiskLevel) => {
+  const updateRiskLevel = async (caseId: string, level: RiskLevel) => {
+    // Optimistic update — UI reflects change immediately
     setCases(prev =>
       prev.map(c => (c.id === caseId ? { ...c, riskLevel: level } : c))
     );
+    try {
+      await patchRiskLevel(caseId, level);
+    } catch (err) {
+      console.error('Failed to persist risk level:', err);
+      // On failure, re-fetch to restore the true DB state
+      load();
+    }
   };
 
-  const updateNotes = (caseId: string, notes: string) => {
+  const updateNotes = async (caseId: string, notes: string) => {
+    // Optimistic update
     setCases(prev =>
       prev.map(c => (c.id === caseId ? { ...c, notes } : c))
     );
+    try {
+      await patchNotes(caseId, notes);
+    } catch (err) {
+      console.error('Failed to persist notes:', err);
+      load();
+    }
   };
 
   const removeCase = async (caseId: string) => {

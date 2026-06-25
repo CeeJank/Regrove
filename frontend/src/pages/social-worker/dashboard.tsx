@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useCases } from '../../contexts/CasesContext';
 import { RiskLevel } from '../../types';
 
@@ -11,6 +12,7 @@ const RISK_META: Record<RiskLevel, { bg: string; text: string; dot: string; labe
 
 const Dashboard: React.FC = () => {
   const { cases, stats, loading, error } = useCases();
+  const navigate = useNavigate();
 
   if (loading) {
     return (
@@ -76,7 +78,12 @@ const Dashboard: React.FC = () => {
             {cases.map(c => {
               const meta = RISK_META[c.riskLevel];
               return (
-                <tr key={c.id} className="dashboard-row">
+                <tr
+                  key={c.id}
+                  className="dashboard-row dashboard-row--clickable"
+                  onClick={() => navigate('/sw/active-cases', { state: { selectedId: c.id } })}
+                  title={`View ${c.name}'s case`}
+                >
                   <td>
                     <div className="cell-user">
                       <div className="case-avatar case-avatar--sm">{c.name[0]}</div>

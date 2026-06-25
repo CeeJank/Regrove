@@ -110,6 +110,7 @@ export interface ActiveCase {
 >>>>>>> 110c6d7 (updated schema and seed sql to CJ's mocks and started dashboard MVC)
   riskLevel: RiskLevel;
   notes: string;
+  notesHistory: NoteHistoryItem[]; // chronological history of notes
   aiSummary: string;
   lastUpdated: string;
   checkIns: CheckIn[];
@@ -175,7 +176,23 @@ export interface BotMessage {
   content: string;
   timestamp: string;
 <<<<<<< HEAD
+<<<<<<< HEAD
 }
 =======
 }
 >>>>>>> 5d704a3 (imported new frontend code and started rebuilding new backend routes)
+=======
+}
+export interface NoteHistoryItem {
+  id: string;
+  noteText: string;
+  createdAt: string;
+}
+
+export interface CheckInItem {
+  id: string;
+  mood: number;
+  events: string;
+  timestamp: string;
+}
+>>>>>>> a61d0e1 (added dashboard and child profile routes along with child-profile frontend logic and related components)

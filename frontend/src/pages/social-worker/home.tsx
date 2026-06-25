@@ -86,6 +86,7 @@ const SWHome: React.FC = () => {
           const child = allChildren[c.childId];
           const risk  = RISK_COLORS[c.riskLevel];
           return (
+<<<<<<< HEAD
             <Link
               key={c.id}
               to="/sw/active-cases"
@@ -93,6 +94,11 @@ const SWHome: React.FC = () => {
               onClick={() => user && updateRecentInteraction(user.id, c.childId)}
             >
               <div className="case-avatar">{child?.name?.[0] ?? '?'}</div>
+=======
+            <Link key={c.id} to="/sw/active-cases" state={{ selectedId: c.id }} className="case-row">
+              {/* Avatar initial comes from the real name returned by the API */}
+              <div className="case-avatar">{c.name[0]}</div>
+>>>>>>> a61d0e1 (added dashboard and child profile routes along with child-profile frontend logic and related components)
               <div className="case-info">
 <<<<<<< HEAD
                 <p className="case-name">{child?.name ?? c.childId}</p>
