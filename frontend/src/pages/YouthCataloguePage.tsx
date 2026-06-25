@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+<<<<<<< HEAD
 import { Link, useNavigate } from "react-router-dom";
 import { fetchAllYouth, type YouthProfile } from "../services/youthService";
 import { logout, getCurrentUser } from "../services/authService";
@@ -43,6 +44,26 @@ export default function YouthCataloguePage() {
 
   // Fetch all youth profiles once on mount
   // apiFetch handles 401/403 automatically — no special error handling needed here
+=======
+import { Link } from "react-router-dom";
+import { fetchAllYouth, type YouthProfile } from "../services/youthService";
+
+const RISK_COLOURS: Record<string, string> = {
+  LOW: "#166534",
+  MEDIUM: "#92400e",
+  HIGH: "#b91c1c",
+  CRITICAL: "#6b21a8",
+};
+
+export default function YouthCataloguePage() {
+  const [youth, setYouth] = useState<YouthProfile[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
+  const [riskFilter, setRiskFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+
+>>>>>>> feature-youthcatalogue
   useEffect(() => {
     fetchAllYouth()
       .then(setYouth)
@@ -50,12 +71,19 @@ export default function YouthCataloguePage() {
       .finally(() => setLoading(false));
   }, []);
 
+<<<<<<< HEAD
   // Apply all active filters to the full list client-side
   // This avoids a server round-trip on every keystroke
   const filtered = youth.filter((y) => {
     const matchName   = y.full_name.toLowerCase().includes(search.toLowerCase());
     const matchRisk   = riskFilter   ? y.latest_risk_level === riskFilter   : true;
     const matchStatus = statusFilter ? y.status            === statusFilter : true;
+=======
+  const filtered = youth.filter((y) => {
+    const matchName = y.full_name.toLowerCase().includes(search.toLowerCase());
+    const matchRisk = riskFilter ? y.latest_risk_level === riskFilter : true;
+    const matchStatus = statusFilter ? y.status === statusFilter : true;
+>>>>>>> feature-youthcatalogue
     return matchName && matchRisk && matchStatus;
   });
 
@@ -65,6 +93,7 @@ export default function YouthCataloguePage() {
         <p className="eyebrow">Youth Support Platform</p>
         <h1>Youth Catalogue</h1>
 
+<<<<<<< HEAD
         {/* Action bar — navigation, logged-in user display, logout */}
         <div className="button-row">
           <Link to="/youth/create" className="primary-btn">+ New Profile</Link>
@@ -78,6 +107,14 @@ export default function YouthCataloguePage() {
         </div>
 
         {/* Filter bar — all filtering is client-side */}
+=======
+        <div className="button-row">
+          <Link to="/youth/create" className="primary-btn">+ New Profile</Link>
+          <Link to="/" className="secondary-btn">Home</Link>
+        </div>
+
+        {/* Filters */}
+>>>>>>> feature-youthcatalogue
         <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap" }}>
           <input
             className="field-input"
@@ -86,24 +123,32 @@ export default function YouthCataloguePage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
+<<<<<<< HEAD
           <select
             className="field-input"
             style={{ minWidth: 140 }}
             value={riskFilter}
             onChange={(e) => setRiskFilter(e.target.value)}
           >
+=======
+          <select className="field-input" style={{ minWidth: 140 }} value={riskFilter} onChange={(e) => setRiskFilter(e.target.value)}>
+>>>>>>> feature-youthcatalogue
             <option value="">All risk levels</option>
             <option value="LOW">Low</option>
             <option value="MEDIUM">Medium</option>
             <option value="HIGH">High</option>
             <option value="CRITICAL">Critical</option>
           </select>
+<<<<<<< HEAD
           <select
             className="field-input"
             style={{ minWidth: 130 }}
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
           >
+=======
+          <select className="field-input" style={{ minWidth: 130 }} value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+>>>>>>> feature-youthcatalogue
             <option value="">All statuses</option>
             <option value="ACTIVE">Active</option>
             <option value="INACTIVE">Inactive</option>
@@ -111,6 +156,7 @@ export default function YouthCataloguePage() {
           </select>
         </div>
 
+<<<<<<< HEAD
         {/* Loading / empty / error states */}
         {loading && <p className="status">Loading…</p>}
         {error   && <p className="error-box">{error}</p>}
@@ -119,6 +165,12 @@ export default function YouthCataloguePage() {
         )}
 
         {/* Results table — only rendered when there is data */}
+=======
+        {loading && <p className="status">Loading…</p>}
+        {error && <p className="error-box">{error}</p>}
+        {!loading && !error && filtered.length === 0 && <p className="status">No youth profiles found.</p>}
+
+>>>>>>> feature-youthcatalogue
         {!loading && !error && filtered.length > 0 && (
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.88rem" }}>
@@ -141,13 +193,19 @@ export default function YouthCataloguePage() {
                     <td style={td}>{y.age ?? "—"}</td>
                     <td style={td}>{y.school || "—"}</td>
                     <td style={td}>{y.category || "—"}</td>
+<<<<<<< HEAD
                     {/* Truncate long interests strings with ellipsis */}
+=======
+>>>>>>> feature-youthcatalogue
                     <td style={{ ...td, maxWidth: 200, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                       {y.interests || "—"}
                     </td>
                     <td style={td}>{y.status}</td>
                     <td style={td}>
+<<<<<<< HEAD
                       {/* Risk level styled with the colour map defined at the top */}
+=======
+>>>>>>> feature-youthcatalogue
                       <span style={{
                         color: RISK_COLOURS[y.latest_risk_level] || "#374151",
                         fontWeight: 600,
@@ -157,11 +215,15 @@ export default function YouthCataloguePage() {
                       </span>
                     </td>
                     <td style={td}>
+<<<<<<< HEAD
                       <Link
                         to={`/youth/${y.id}`}
                         className="secondary-btn"
                         style={{ padding: "4px 10px", fontSize: "0.8rem" }}
                       >
+=======
+                      <Link to={`/youth/${y.id}`} className="secondary-btn" style={{ padding: "4px 10px", fontSize: "0.8rem" }}>
+>>>>>>> feature-youthcatalogue
                         View
                       </Link>
                     </td>
@@ -176,6 +238,9 @@ export default function YouthCataloguePage() {
   );
 }
 
+<<<<<<< HEAD
 // Shared cell padding styles extracted as constants to avoid repetition in JSX
+=======
+>>>>>>> feature-youthcatalogue
 const th = { padding: "8px 12px", fontWeight: 600 } as const;
 const td = { padding: "8px 12px" } as const;

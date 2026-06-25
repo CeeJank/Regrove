@@ -7,9 +7,15 @@ const router = express.Router();
 const sessionAudioRoutes = require("./session_start_audio");
 const dashboardRoutes    = require("./dashboard");
 const childProfileRoutes = require("./childProfile");
+<<<<<<< HEAD
 const youthRoutes        = require("./youth");
 const authRoutes         = require("./auth");
 const userRoutes         = require("./users");
+=======
+const youthRoutes = require("./youth");
+const { startSession } = require("../controllers/startSession");
+const authenticate = require("../middleware/auth");
+>>>>>>> feature-youthcatalogue
 
 const { startSession } = require("../controllers/startSession");
 
@@ -35,6 +41,7 @@ router.use("/workers", dashboardRoutes);
 
 // Child profiles (legacy naming — maps to the child profile feature)
 router.use("/children", childProfileRoutes);
+router.use("/youth", youthRoutes);
 
 // Youth profiles — all routes protected inside youth.js
 router.use("/youth", youthRoutes);

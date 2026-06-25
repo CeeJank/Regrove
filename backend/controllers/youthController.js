@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // Import model functions — the controller never writes SQL directly;
 // all database interaction is delegated to the model layer.
 const { createYouthProfile, getAllYouth, getYouthById } = require('../models/youthModel');
@@ -8,16 +9,26 @@ const { createYouthProfile, getAllYouth, getYouthById } = require('../models/you
 //
 // Validates that full_name is present (the only required field), then delegates
 // the INSERT to the model. All other fields are optional and default in the model.
+=======
+const { createYouthProfile, getAllYouth, getYouthById } = require('../models/youthModel');
+
+>>>>>>> feature-youthcatalogue
 exports.createYouthProfile = async (req, res) => {
   try {
     const { full_name } = req.body;
 
+<<<<<<< HEAD
     // full_name is the only mandatory field — the DB requires it (NOT NULL)
+=======
+>>>>>>> feature-youthcatalogue
     if (!full_name || full_name.trim() === '') {
       return res.status(400).json({ success: false, message: 'full_name is required' });
     }
 
+<<<<<<< HEAD
     // Pass the full request body to the model; it picks out the fields it needs
+=======
+>>>>>>> feature-youthcatalogue
     const youth = await createYouthProfile(req.body);
     return res.status(201).json({ success: true, data: youth });
   } catch (error) {
@@ -26,12 +37,15 @@ exports.createYouthProfile = async (req, res) => {
   }
 };
 
+<<<<<<< HEAD
 // ─── getAllYouth ──────────────────────────────────────────────────────────────
 // Handles GET /api/youth
 // Protected: requires authenticateToken + requireWorkerOrAdmin middleware
 //
 // Returns all youth profiles sorted newest-first so the catalogue always
 // shows recently added profiles at the top.
+=======
+>>>>>>> feature-youthcatalogue
 exports.getAllYouth = async (req, res) => {
   try {
     const youth = await getAllYouth();
@@ -42,6 +56,7 @@ exports.getAllYouth = async (req, res) => {
   }
 };
 
+<<<<<<< HEAD
 // ─── getYouthById ─────────────────────────────────────────────────────────────
 // Handles GET /api/youth/:id
 // Protected: requires authenticateToken + requireWorkerOrAdmin middleware
@@ -49,6 +64,8 @@ exports.getAllYouth = async (req, res) => {
 // Returns a single youth profile. Responds 404 if the id doesn't exist
 // rather than returning an empty body, so the client can distinguish
 // "not found" from "server error".
+=======
+>>>>>>> feature-youthcatalogue
 exports.getYouthById = async (req, res) => {
   try {
     const { id } = req.params;

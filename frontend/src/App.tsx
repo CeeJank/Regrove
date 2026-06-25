@@ -5,6 +5,7 @@ import DashboardPage from "./pages/DashboardPage";
 import HomePage from "./pages/HomePage";
 import RecordingPage from "./pages/RecordingPage";
 import YouthCataloguePage from "./pages/YouthCataloguePage";
+<<<<<<< HEAD
 =======
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
@@ -22,6 +23,9 @@ import LoginPage              from "./pages/LoginPage";
 // It redirects to /login when no JWT is found in localStorage.
 import ProtectedRoute from "./components/ProtectedRoute";
 
+=======
+import CreateYouthProfilePage from "./pages/CreateYouthProfilePage";
+>>>>>>> feature-youthcatalogue
 import "./styles/app.css";
 */
 import React from 'react';
@@ -78,6 +82,7 @@ const ProtectedChildRoute = ({ children }: { children: React.ReactNode }) => {
 const AppRoutes = () => {
   const { user } = useAuth();
   return (
+<<<<<<< HEAD
     <Routes>
       {/* Universal */}
       <Route path="/" element={<MainPage />} />
@@ -102,6 +107,7 @@ const AppRoutes = () => {
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
 =======
+<<<<<<< HEAD
 // ─── App ──────────────────────────────────────────────────────────────────────
 // Root component. Defines the full client-side routing table.
 //
@@ -142,6 +148,19 @@ function App() {
       </Routes>
     </BrowserRouter>
 >>>>>>> 682a214 (Finish logins for youth and worker with jwt and bcrypt credentials)
+=======
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/children/:childId/session/:sessionId" element={<RecordingPage />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/children/:childId" element={<ChildProfilePage />} />
+        <Route path="/youth" element={<YouthCataloguePage />} />
+        <Route path="/youth/create" element={<CreateYouthProfilePage />} />
+      </Routes>
+    </BrowserRouter>
+>>>>>>> a46615a (Finish Youth creation, youth cataogue and routing errors.)
+>>>>>>> feature-youthcatalogue
   );
 };
 

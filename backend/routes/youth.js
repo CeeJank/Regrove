@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { createYouthProfile, getAllYouth, getYouthById } = require('../controllers/youthController');
+<<<<<<< HEAD
 const { authenticateToken, requireWorkerOrAdmin } = require('../middleware/authMiddleware');
 
 // ─── Youth Profile Routes ─────────────────────────────────────────────────────
@@ -21,5 +22,11 @@ router.get('/:id', authenticateToken, requireWorkerOrAdmin, getYouthById);
 // Only workers and admins are permitted; youth accounts must not be able to
 // register other youths into the system
 router.post('/',   authenticateToken, requireWorkerOrAdmin, createYouthProfile);
+=======
+
+router.get('/', getAllYouth);
+router.post('/', createYouthProfile);
+router.get('/:id', getYouthById);
+>>>>>>> feature-youthcatalogue
 
 module.exports = router;
