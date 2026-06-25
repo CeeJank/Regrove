@@ -25,14 +25,21 @@ const authenticateToken = async (req, res, next) => {
     return res.status(401).json({ success: false, message: 'No token provided' });
   }
 
+  let decoded;
   try {
     // jwt.verify throws if the token is expired, tampered with, or signed with a different secret
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    decoded = jwt.verify(token, process.env.JWT_SECRET);
+  } catch (error) {
+    const message = error.name === 'TokenExpiredError' ? 'Token expired' : 'Invalid or expired token';
+    return res.status(401).json({ success: false, message });
+  }
 
-    // Resolve profile ids as well because most domain tables reference
-    // worker_profiles.id / youth_profiles.id rather than users.id.
-    const resolvedUser = { ...decoded, workerId: null, childId: null };
+  // Resolve profile ids from the DB. If the DB is unavailable, proceed with
+  // null ids — downstream controllers will return 403 for operations that
+  // strictly require them, rather than the misleading "Invalid or expired token".
+  const resolvedUser = { ...decoded, workerId: null, childId: null };
 
+  try {
     if (decoded.role === 'worker' || decoded.role === 'admin') {
       const workerResult = await pool.query(
         'SELECT id FROM worker_profiles WHERE user_id = $1 LIMIT 1',
@@ -48,18 +55,12 @@ const authenticateToken = async (req, res, next) => {
       );
       resolvedUser.childId = childResult.rows[0]?.id ?? null;
     }
-
-    // Attach the decoded payload so controllers can read req.user.userId,
-    // req.user.workerId / req.user.childId, and req.user.role.
-    req.user = resolvedUser;
-    return next();
-  } catch (error) {
-    // Distinguish expired tokens from outright invalid ones for a clearer client message
-    const message = error.name === 'TokenExpiredError'
-      ? 'Token expired'
-      : 'Invalid or expired token';
-    return res.status(401).json({ success: false, message });
+  } catch (dbError) {
+    console.warn('authMiddleware: DB unavailable, proceeding with workerId/childId = null:', dbError.message);
   }
+
+  req.user = resolvedUser;
+  return next();
 };
 
 // ─── requireWorkerOrAdmin ─────────────────────────────────────────────────────

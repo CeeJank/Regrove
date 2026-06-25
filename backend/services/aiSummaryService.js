@@ -188,6 +188,94 @@ async function generateSummary(transcript) {
   };
 }
 
+function buildCansSummaryPrompt(transcript) {
+  return `You are a clinical assistant helping a social worker complete a CANS (Child and Adolescent Needs and Strengths) assessment based on an audio session transcript.
+
+Review the transcript and rate each domain using only what is explicitly discussed or observable. Do not infer beyond the transcript.
+
+Needs rating scale (higher = more urgent):
+0 — No evidence of need
+1 — Some concern (watchful)
+2 — Action needed (moderate concern)
+3 — Immediate / intensive action needed
+
+Strengths rating scale (lower = stronger):
+0 — Strength well-developed (actively use in planning)
+1 — Some strength present (build on it)
+2 — Potential strength (needs development)
+3 — No evidence of strength
+
+Use this exact format, replacing [N] with the rating number and [text] with a direct quote or "No evidence in transcript":
+
+## Life Functioning
+
+**Family:** [N]
+Evidence: [text]
+
+**Living Situation:** [N]
+Evidence: [text]
+
+**School / Work:** [N]
+Evidence: [text]
+
+**Social Functioning:** [N]
+Evidence: [text]
+
+## Behavioural / Emotional Needs
+
+**Depression / Anxiety:** [N]
+Evidence: [text]
+
+**Self-Harm / Suicidality:** [N]
+Evidence: [text]
+
+**Trauma Experiences:** [N]
+Evidence: [text]
+
+**Substance Use:** [N]
+Evidence: [text]
+
+**Risk Behaviours:** [N]
+Evidence: [text]
+
+## Strengths
+
+**Family Support:** [N]
+Evidence: [text]
+
+**Interpersonal / Social Skills:** [N]
+Evidence: [text]
+
+**Recreational / Hobbies:** [N]
+Evidence: [text]
+
+## Session Summary
+[Two to three sentences summarising what was discussed and any key concerns or strengths to follow up on.]
+
+Transcript:
+${transcript}`;
+}
+
+async function generateCansSummary(transcript) {
+  const safeTranscript = String(transcript || "No transcript content provided.").trim();
+
+  try {
+    const aiResult = await callGeminiWithMetadata(buildCansSummaryPrompt(safeTranscript), {
+      temperature: 0.25,
+      maxOutputTokens: 2800,
+    });
+
+    if (aiResult.text && aiResult.finishReason !== "MAX_TOKENS") {
+      return aiResult.text;
+    }
+  } catch (error) {
+    console.warn("Gemini CANS summary failed:", error.message);
+  }
+
+  return `## Session Summary\nTranscript received but AI summarisation failed. Please review the raw transcript manually.\n\nTranscript excerpt:\n${safeTranscript.slice(0, 500)}`;
+}
+
 module.exports = {
   generateSummary,
+  generateCansSummary,
 };

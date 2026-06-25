@@ -4,7 +4,7 @@ import { useCases, CreateChildForm } from '../../contexts/CasesContext';
 import { useDocumentation } from '../../contexts/DocumentationContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { RiskLevel, CANSItem } from '../../types';
-import { apiFetch } from '../../services/api';
+import { apiFetch, uploadSessionAudio, fetchCansSummary } from '../../services/api';
 import ChildSearchBar from '../../components/shared/ChildSearchBar';
 
 const RISK_META: Record<RiskLevel, { bg: string; text: string; label: string }> = {
@@ -73,7 +73,13 @@ const ActiveCases: React.FC = () => {
   const [elapsed,      setElapsed]      = useState(0);
   const [aiNotes,      setAiNotes]      = useState('');
   const [processing,   setProcessing]   = useState(false);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [currentSessionId, setCurrentSessionId] = useState('');
+  const [cansSummary,      setCansSummary]      = useState('');
+  const [cansLoading,      setCansLoading]      = useState(false);
+  const intervalRef    = useRef<ReturnType<typeof setInterval> | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef   = useRef<Blob[]>([]);
+  const pollTimerRef     = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     if (sessionState === 'active') {
@@ -152,11 +158,34 @@ const ActiveCases: React.FC = () => {
   };
 
   // ── Meetup helpers ────────────────────────────────────────────
+  useEffect(() => {
+    return () => {
+      if (pollTimerRef.current) clearInterval(pollTimerRef.current);
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        mediaRecorderRef.current.stop();
+        mediaRecorderRef.current.stream.getTracks().forEach(t => t.stop());
+      }
+    };
+  }, []);
+
   const startSession = async () => {
     if (!activeCase) return;
     try {
-      await apiFetch(`/session/start/${activeCase.childId}`, { method: 'POST' });
+      const session = await apiFetch<{ sessionId: string }>(`/session/start/${activeCase.childId}`, { method: 'POST' });
+      setCurrentSessionId(session.sessionId);
     } catch {}
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      audioChunksRef.current = [];
+      recorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunksRef.current.push(e.data); };
+      recorder.start();
+      mediaRecorderRef.current = recorder;
+    } catch {
+      // Microphone unavailable — session continues without audio recording.
+    }
+
     setSessionState('active');
   };
 
@@ -164,6 +193,20 @@ const ActiveCases: React.FC = () => {
     if (!activeCase) return;
     setSessionState('ended');
     setProcessing(true);
+
+    // Stop recording and collect audio blob before anything async.
+    let audioBlob: Blob | null = null;
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      audioBlob = await new Promise<Blob>((resolve) => {
+        mediaRecorderRef.current!.onstop = () => {
+          resolve(new Blob(audioChunksRef.current, { type: 'audio/webm' }));
+          audioChunksRef.current = [];
+        };
+        mediaRecorderRef.current!.stop();
+        mediaRecorderRef.current!.stream.getTracks().forEach(t => t.stop());
+      });
+    }
+
     try {
       const { summary } = await apiFetch<{ summary: string }>(`/session/summarize/${activeCase.childId}`);
       await apiFetch('/session/logcase', {
@@ -178,11 +221,41 @@ const ActiveCases: React.FC = () => {
     } finally {
       setProcessing(false);
     }
+
+    // Upload audio and poll for CANS summary.
+    if (audioBlob && currentSessionId) {
+      setCansLoading(true);
+      try {
+        await uploadSessionAudio(currentSessionId, audioBlob);
+        let attempts = 0;
+        pollTimerRef.current = setInterval(async () => {
+          attempts += 1;
+          const result = await fetchCansSummary(currentSessionId);
+          if (result) {
+            setCansSummary(result.summary);
+            setCansLoading(false);
+            clearInterval(pollTimerRef.current!);
+            pollTimerRef.current = null;
+          } else if (attempts >= 24) {
+            // Give up after 2 minutes (24 × 5 s).
+            setCansLoading(false);
+            clearInterval(pollTimerRef.current!);
+            pollTimerRef.current = null;
+          }
+        }, 5000);
+      } catch {
+        setCansLoading(false);
+      }
+    }
   };
 
   const resetSession = () => {
+    if (pollTimerRef.current) { clearInterval(pollTimerRef.current); pollTimerRef.current = null; }
     setSessionState('idle');
     setAiNotes('');
+    setCansSummary('');
+    setCansLoading(false);
+    setCurrentSessionId('');
     setElapsed(0);
   };
 
@@ -451,6 +524,27 @@ const ActiveCases: React.FC = () => {
                           <p className="cans-label">AI Session Summary (sent to Active Cases &amp; Child Catalog)</p>
                           <p style={{ fontSize: 14, lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{aiNotes}</p>
                         </div>
+
+                        <div className="meetup-summary-box" style={{ marginTop: 16 }}>
+                          <p className="cans-label">CANS Assessment (from audio transcript)</p>
+                          {cansLoading ? (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0' }}>
+                              <div className="typing-indicator"><span /><span /><span /></div>
+                              <p style={{ margin: 0, fontSize: 13, color: 'var(--text-secondary)' }}>
+                                Transcribing audio and generating CANS assessment…
+                              </p>
+                            </div>
+                          ) : cansSummary ? (
+                            <pre style={{ fontSize: 13, lineHeight: 1.7, whiteSpace: 'pre-wrap', fontFamily: 'inherit', margin: 0 }}>
+                              {cansSummary}
+                            </pre>
+                          ) : (
+                            <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+                              No audio recording captured for this session.
+                            </p>
+                          )}
+                        </div>
+
                         <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
                           <button className="btn btn--primary" onClick={resetSession}>Start Another Session</button>
                           <button

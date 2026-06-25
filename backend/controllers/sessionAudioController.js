@@ -16,6 +16,9 @@ exports.transcribeAudio = async (req, res) => {
       filename: req.file.originalname || 'audio.webm',
       contentType: req.file.mimetype || 'audio/webm',
     });
+    if (req.body.sessionId) {
+      formData.append('session_id', req.body.sessionId);
+    }
 
     await axios.post(`${pythonApiUrl}/transcribe`, formData, {
       headers: formData.getHeaders(),

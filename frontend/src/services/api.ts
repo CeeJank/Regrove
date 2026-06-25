@@ -27,3 +27,18 @@ export async function apiFetchForm<T>(path: string, body: FormData): Promise<T> 
   }
   return res.json() as Promise<T>;
 }
+
+export async function uploadSessionAudio(sessionId: string, blob: Blob): Promise<void> {
+  const formData = new FormData();
+  formData.append('audio', blob, 'session.webm');
+  formData.append('sessionId', sessionId);
+  await apiFetchForm<unknown>('/session/transcribe', formData);
+}
+
+export async function fetchCansSummary(sessionId: string): Promise<{ summary: string; createdAt: string } | null> {
+  try {
+    return await apiFetch<{ summary: string; createdAt: string }>(`/session/cans-summary/${sessionId}`);
+  } catch {
+    return null;
+  }
+}

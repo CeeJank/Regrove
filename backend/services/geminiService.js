@@ -1,32 +1,18 @@
 const axios = require("axios");
 
-// Service responsibility:
-// Wrap all Gemini API calls in one place so chat and summary services do not
-// need to know request URLs, retry rules, response parsing, or API key names.
+// Wraps Kimi (Moonshot) API calls — OpenAI-compatible endpoint.
+// All chat and summary services call through here so only this file
+// needs changing if the provider changes again.
 
-const DEFAULT_MODEL = "gemini-2.5-flash";
+const KIMI_API_URL = "https://api.moonshot.ai/v1/chat/completions";
+const DEFAULT_MODEL = "moonshot-v1-32k";
 
-function getGeminiApiKey() {
+function getApiKey() {
   return process.env.GEMINI_API_KEY || process.env.AI_API_KEY || "";
 }
 
-function getGeminiModel() {
+function getModel() {
   return process.env.GEMINI_MODEL || process.env.AI_MODEL || DEFAULT_MODEL;
-}
-
-function getTextFromGeminiResponse(data) {
-  const parts = data?.candidates?.[0]?.content?.parts || [];
-
-  return parts
-    .map((part) => part.text)
-    .filter(Boolean)
-    .join("\n")
-    .trim();
-}
-
-// Gemini includes a finish reason. Services use this to reject cut-off output.
-function getFinishReasonFromGeminiResponse(data) {
-  return data?.candidates?.[0]?.finishReason || "";
 }
 
 function delay(ms) {
@@ -35,53 +21,53 @@ function delay(ms) {
 
 function shouldRetry(error) {
   const status = error.response?.status;
-
   return status === 429 || status === 500 || status === 502 || status === 503;
 }
 
+// Kimi uses "length" for max-tokens cutoff; normalise to "MAX_TOKENS" so
+// callers that check finishReason !== "MAX_TOKENS" keep working unchanged.
+function normaliseFinishReason(reason) {
+  if (reason === "length") return "MAX_TOKENS";
+  return reason || "";
+}
+
 async function callGeminiWithMetadata(prompt, options = {}) {
-  const apiKey = getGeminiApiKey();
+  const apiKey = getApiKey();
 
   if (!apiKey) {
-    return {
-      text: null,
-      finishReason: "NO_API_KEY",
-    };
+    return { text: null, finishReason: "NO_API_KEY" };
   }
 
-  const model = getGeminiModel();
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+  const model = getModel();
   const temperature = options.temperature ?? 0.55;
-  const maxOutputTokens = options.maxOutputTokens ?? 900;
+  const maxTokens = options.maxOutputTokens ?? 900;
 
   let lastError;
 
   for (let attempt = 1; attempt <= 3; attempt += 1) {
     try {
       const response = await axios.post(
-        url,
+        KIMI_API_URL,
         {
-          contents: [
-            {
-              role: "user",
-              parts: [{ text: prompt }],
-            },
-          ],
-          generationConfig: {
-            temperature,
-            maxOutputTokens,
-          },
+          model,
+          messages: [{ role: "user", content: prompt }],
+          temperature,
+          max_tokens: maxTokens,
         },
         {
-          params: { key: apiKey },
-          timeout: 15000,
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            "Content-Type": "application/json",
+          },
+          timeout: 30000,
         }
       );
 
-      return {
-        text: getTextFromGeminiResponse(response.data),
-        finishReason: getFinishReasonFromGeminiResponse(response.data),
-      };
+      const choice = response.data?.choices?.[0];
+      const text = choice?.message?.content?.trim() || "";
+      const finishReason = normaliseFinishReason(choice?.finish_reason);
+
+      return { text, finishReason };
     } catch (error) {
       lastError = error;
 
@@ -96,10 +82,8 @@ async function callGeminiWithMetadata(prompt, options = {}) {
   throw lastError;
 }
 
-// Convenience wrapper for callers that only need the text.
 async function callGemini(prompt, options = {}) {
   const result = await callGeminiWithMetadata(prompt, options);
-
   return result.text;
 }
 

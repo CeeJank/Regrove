@@ -26,11 +26,14 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - PYTHON_API_URL=http://api:8000
       - EXPRESS_API_URL=http://backend:5000
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
 
   api:
     build: ./api
     ports:
       - "8000:8000"
+    environment:
+      - EXPRESS_API_URL=http://backend:5000
     #deploy:
       #resources:
         #reservations:

@@ -28,16 +28,17 @@ def processRecording():
     # body: formData
     # })
     recording = request.files.get("audio")
+    session_id = request.form.get("session_id", "")
 
     if recording is None:
         return jsonify({"Error": "no recording received!!"}), 400
 
     # Check for not .mp4
     if not recording.filename or (
-        not recording.filename.endswith(".mp4")
+        not recording.filename.endswith(".mp3")
         and not recording.filename.endswith(".webm")
     ):
-        return jsonify({"Error": "Recording not .mp4"}), 400
+        return jsonify({"Error": "Recording file must be .mp3 or .webm"}), 400
 
     # store the extension of the recording mp4/webm
     ext = os.path.splitext(recording.filename)[1]
@@ -70,9 +71,12 @@ def processRecording():
 
     os.unlink(md_path)
 
-    # contents of transcript in object for res
+    # Post transcript back to Express for CANS summarisation
     express_url = os.environ.get("EXPRESS_API_URL", "http://localhost:5000")
-    requests.post(f"{express_url}/new-endpoint", json={"transcription": markdown})
+    requests.post(
+        f"{express_url}/api/session/transcript-callback",
+        json={"session_id": session_id, "transcription": markdown},
+    )
     return jsonify({"status": "Processing the transcript"}), 202
 
 
