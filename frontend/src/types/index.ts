@@ -195,4 +195,21 @@ export interface CheckInItem {
   events: string;
   timestamp: string;
 }
+<<<<<<< HEAD
 >>>>>>> a61d0e1 (added dashboard and child profile routes along with child-profile frontend logic and related components)
+=======
+
+export interface UnifiedHubEvent {
+  id: string;
+  origin: 'manual';
+  title: string;
+  date: string;        // YYYY-MM-DD string format mapped via TO_CHAR
+  startTime: string;   // HH:MM
+  endTime: string;     // HH:MM
+  status: string;      // PENDING, ACCEPTED, DECLINED
+  associatedChild: string;
+  extraContext: {
+    description?: string;
+  } | null;
+}
+>>>>>>> c29ae09 (implemented calendar feature for social worker and adjusted db configs as well)
