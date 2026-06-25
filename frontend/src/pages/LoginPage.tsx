@@ -3,15 +3,15 @@ import { useNavigate } from "react-router-dom";
 import { login, isAuthenticated } from "../services/authService";
 
 // ─── LoginPage ────────────────────────────────────────────────────────────────
-// The entry point for all users — workers, admins, and youth all log in here.
+// The entry point for all users — workers, admins, and children all log in here.
 //
 // Behaviours:
-//   - If a valid token already exists in localStorage, skips straight to /youth
+//   - If a valid token already exists in localStorage, skips straight to /child
 //   - Reads "auth_redirect_message" from sessionStorage and shows it as an error.
 //     This message is written by apiFetch when a 401/403 response is received
 //     mid-session (e.g. expired token), giving the user context for why they
 //     were redirected here.
-//   - On successful login, navigates to /youth (the youth catalogue)
+//   - On successful login, navigates to /child (the child catalogue)
 //   - On failure, shows the server error message without redirecting
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -23,7 +23,7 @@ export default function LoginPage() {
   useEffect(() => {
     // Skip login form if the user already has a session
     if (isAuthenticated()) {
-      navigate("/youth", { replace: true });
+      navigate("/child", { replace: true });
       return;
     }
 
@@ -50,7 +50,7 @@ export default function LoginPage() {
     try {
       // login() POSTs credentials, stores token + user in localStorage on success
       await login({ email, password });
-      navigate("/youth");
+      navigate("/child");
     } catch (err: unknown) {
       // Surface the server's error message (e.g. "Invalid email or password")
       setError(err instanceof Error ? err.message : "Login failed.");
@@ -62,7 +62,7 @@ export default function LoginPage() {
   return (
     <main className="page-shell">
       <section className="card" style={{ maxWidth: 420 }}>
-        <p className="eyebrow">SCS Youth Support Platform</p>
+        <p className="eyebrow">SCS Child Support Platform</p>
         <h1 style={{ fontSize: 32, marginBottom: 8 }}>Worker Login</h1>
         <p className="lead" style={{ marginBottom: 24, fontSize: "0.92rem" }}>
           Sign in with your worker account to continue.

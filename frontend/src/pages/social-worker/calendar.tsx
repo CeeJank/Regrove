@@ -77,7 +77,7 @@ const SWCalendar: React.FC = () => {
       <div className="page-header">
         <div>
           <h1 className="page-title">Calendar</h1>
-          <p className="page-sub">Manage events and sessions with your youth.</p>
+          <p className="page-sub">Manage events and sessions with your child.</p>
         </div>
         <button className="btn btn--primary" onClick={() => setShowCreate(true)}>+ Create Event</button>
       </div>
@@ -125,7 +125,7 @@ const SWCalendar: React.FC = () => {
                 </div>
                 <p className="event-time">{e.startTime} – {e.endTime}</p>
                 <p className="event-attendees">Workers: {e.workerIds.map(id => allWorkers[id]?.name ?? id).join(', ')}</p>
-                <p className="event-attendees">Youth: {e.childIds.map(id => allChildren[id]?.name ?? id).join(', ')}</p>
+                <p className="event-attendees">Child: {e.childIds.map(id => allChildren[id]?.name ?? id).join(', ')}</p>
                 {user && e.organizerId === user.id && (
                   <button className="btn btn--danger btn--sm" style={{ marginTop: 8 }} onClick={() => handleDelete(e)}>Delete Event</button>
                 )}

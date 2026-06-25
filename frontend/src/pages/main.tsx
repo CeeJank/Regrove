@@ -41,7 +41,7 @@ const MainPage: React.FC = () => {
           <span className="hero-accent">someone in their corner.</span>
         </h1>
         <p className="hero-sub">
-          Connecting youths with dedicated social workers. Building bridges
+          Connecting children with dedicated social workers. Building bridges
           through daily check-ins, honest conversations, and trusted support.
         </p>
         <div className="hero-cta-group">

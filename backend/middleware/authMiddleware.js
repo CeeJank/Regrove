@@ -44,10 +44,10 @@ const authenticateToken = (req, res, next) => {
 // Role-guard middleware. Must run AFTER authenticateToken.
 //
 // Allows:  role === 'worker'  OR  role === 'admin'
-// Blocks:  role === 'youth'   → 403 Forbidden
+// Blocks:  role === 'child'   → 403 Forbidden
 //
-// Used on all youth-management endpoints — youth accounts should never be able
-// to read or modify the youth profile catalogue.
+// Used on all child-management endpoints — child accounts should never be able
+// to read or modify the child profile catalogue.
 const requireWorkerOrAdmin = (req, res, next) => {
   if (!req.user || (req.user.role !== 'worker' && req.user.role !== 'admin')) {
     return res.status(403).json({ success: false, message: 'Forbidden: worker or admin access required' });
@@ -64,7 +64,7 @@ const requireWorker = requireWorkerOrAdmin;
 // Strict role-guard middleware. Must run AFTER authenticateToken.
 //
 // Allows:  role === 'admin' only
-// Blocks:  workers and youth → 403 Forbidden
+// Blocks:  workers and children → 403 Forbidden
 //
 // Used on privileged operations such as creating new worker accounts.
 const requireAdmin = (req, res, next) => {

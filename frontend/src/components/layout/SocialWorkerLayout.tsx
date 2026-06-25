@@ -12,7 +12,7 @@ const navItems = [
   { to: '/sw/calendar',      label: 'Calendar',      icon: CalendarIcon },
   { to: '/sw/messages',      label: 'Messages',      icon: ChatBubbleLeftRightIcon },
   { to: '/sw/active-cases',  label: 'Active Cases',  icon: ClipboardDocumentListIcon },
-  { to: '/sw/youth-catalog', label: 'Youth Catalog', icon: BookOpenIcon },
+  { to: '/sw/child-catalog', label: 'Child Catalog', icon: BookOpenIcon },
 ];
 
 export const SocialWorkerLayout = ({ children }: { children: ReactNode }) => {

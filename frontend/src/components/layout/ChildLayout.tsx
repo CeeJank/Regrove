@@ -48,7 +48,7 @@ export const ChildLayout = ({ children }: { children: ReactNode }) => {
           <div className="user-avatar child-avatar">{user?.fullName?.[0] ?? 'Y'}</div>
           <div className="user-info">
             <p className="user-name">{user?.fullName}</p>
-            <p className="user-role child-role">Youth</p>
+            <p className="user-role child-role">Child</p>
           </div>
         </div>
         <nav className="sidebar-nav">

@@ -88,7 +88,7 @@ const ChildCalendar: React.FC = () => {
                 </div>
                 <p className="event-time">{e.startTime} – {e.endTime}</p>
                 <p className="event-attendees">Social Workers: {e.workerIds.map(id => allWorkers[id]?.name ?? id).join(', ')}</p>
-                <p className="event-attendees">Youth: {e.childIds.map(id => allChildren[id]?.name ?? id).join(', ')}</p>
+                <p className="event-attendees">Child: {e.childIds.map(id => allChildren[id]?.name ?? id).join(', ')}</p>
                 {e.status === 'pending' && user && e.childIds.includes(user.id) && (
                   <div className="referral-actions" style={{ marginTop: 8 }}>
                     <button className="btn btn--primary btn--sm" onClick={() => respond(e.id, true)}>Accept</button>

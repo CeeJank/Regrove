@@ -60,7 +60,7 @@ const SWMessages: React.FC = () => {
               <div className="contact-avatar">{child.name[0]}</div>
               <div className="contact-info">
                 <p className="contact-name">{child.name}</p>
-                <p className="contact-preview">Youth</p>
+                <p className="contact-preview">Child</p>
               </div>
             </div>
           );
@@ -70,7 +70,7 @@ const SWMessages: React.FC = () => {
       <div className="chat-area">
         {!activeChild ? (
           <div className="chat-empty">
-            <p className="empty-state">Select a youth to start messaging.</p>
+            <p className="empty-state">Select a child to start messaging.</p>
           </div>
         ) : (
           <>
@@ -78,7 +78,7 @@ const SWMessages: React.FC = () => {
               <div className="contact-avatar contact-avatar--lg">{activeChild.name[0]}</div>
               <div>
                 <p className="chat-contact-name">{activeChild.name}</p>
-                <p className="chat-contact-sub">Youth</p>
+                <p className="chat-contact-sub">Child</p>
               </div>
             </div>
 

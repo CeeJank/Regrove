@@ -64,7 +64,7 @@ const LoginPage: React.FC = () => {
             className={`role-btn${role === 'child' ? ' role-btn--active' : ''}`}
             onClick={() => setRole('child')}
           >
-            🧑 Youth
+            🧑 Child
           </button>
         </div>
 

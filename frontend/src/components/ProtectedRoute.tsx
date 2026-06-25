@@ -13,7 +13,7 @@ interface Props {
 // so pressing the back button after login does not loop back to /login.
 //
 // Usage in App.tsx:
-//   <Route path="/youth" element={<ProtectedRoute><YouthCataloguePage /></ProtectedRoute>} />
+//   <Route path="/child" element={<ProtectedRoute><ChildCataloguePage /></ProtectedRoute>} />
 //
 // Note: this guard only checks token presence. Token validity (expiry, signature)
 // is enforced by the backend on every API call, and apiFetch handles the

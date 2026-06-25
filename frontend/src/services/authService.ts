@@ -11,7 +11,7 @@ const USER_KEY  = "user";  // localStorage key for the serialised AuthUser objec
 export interface AuthUser {
   id: number;
   email: string;
-  role: string; // 'worker' | 'admin' | 'youth'
+  role: string; // 'worker' | 'admin' | 'child'
 }
 
 export interface LoginPayload {

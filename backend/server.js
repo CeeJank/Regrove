@@ -16,7 +16,7 @@ const express = require('express');
 const cors = require('cors');
 
 // Central route index — all /api/* routes are registered there
-const routes = require('./routes');
+const routes = require('./routes/indexRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;

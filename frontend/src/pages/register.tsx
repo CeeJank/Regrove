@@ -47,7 +47,7 @@ const RegisterPage: React.FC = () => {
       <div className="auth-card auth-card--wide">
         <Link to="/" className="auth-brand"><span>🌿</span> Regrove</Link>
         <h1 className="auth-title">Create Social Worker Account</h1>
-        <p className="auth-sub">Register to start supporting youth through Regrove.</p>
+        <p className="auth-sub">Register to start supporting children through Regrove.</p>
         <div className="role-info-banner">
           <span>👩‍💼</span>
           <div>

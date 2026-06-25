@@ -25,7 +25,7 @@ const rl  = readline.createInterface({ input: process.stdin, output: process.std
 const ask = (question) => new Promise((resolve) => rl.question(question, resolve));
 
 async function main() {
-  console.log('\n=== SCS Youth Support Platform — Admin Bootstrap ===\n');
+  console.log('\n=== SCS Child Support Platform — Admin Bootstrap ===\n');
 
   // JWT_SECRET must be configured before we create the first account —
   // workers and admins will need it to log in

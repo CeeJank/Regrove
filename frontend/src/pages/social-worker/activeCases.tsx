@@ -347,7 +347,7 @@ const ActiveCases: React.FC = () => {
                     </button>
                     <button
                       className="btn btn--outline"
-                      onClick={() => navigate(`/sw/youth-catalog?child=${activeCase.childId}`)}
+                      onClick={() => navigate(`/sw/child-catalog?child=${activeCase.childId}`)}
                     >
                       📖 Visit Catalog
                     </button>
@@ -358,7 +358,7 @@ const ActiveCases: React.FC = () => {
                   <div className="meetup-confirm-card" style={{ margin: 0, maxWidth: '100%' }}>
                     <div className="meetup-icon">🎥</div>
                     <h2>Start Meetup with {child?.name}?</h2>
-                    <p>AI will record and summarize the session. The summary will be sent to Active Cases and Youth Catalog automatically.</p>
+                    <p>AI will record and summarize the session. The summary will be sent to Active Cases and Child Catalog automatically.</p>
                     <div className="meetup-actions">
                       <button className="btn btn--outline" onClick={resetSession}>No, Cancel</button>
                       <button className="btn btn--primary" onClick={startSession}>Yes, Start Session</button>
@@ -392,14 +392,14 @@ const ActiveCases: React.FC = () => {
                     ) : (
                       <>
                         <div className="meetup-summary-box">
-                          <p className="cans-label">AI Session Summary (sent to Active Cases &amp; Youth Catalog)</p>
+                          <p className="cans-label">AI Session Summary (sent to Active Cases &amp; Child Catalog)</p>
                           <p style={{ fontSize: 14, lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{aiNotes}</p>
                         </div>
                         <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
                           <button className="btn btn--primary" onClick={resetSession}>Start Another Session</button>
                           <button
                             className="btn btn--outline"
-                            onClick={() => navigate(`/sw/youth-catalog?child=${activeCase.childId}`)}
+                            onClick={() => navigate(`/sw/child-catalog?child=${activeCase.childId}`)}
                           >
                             📖 Visit Catalog
                           </button>

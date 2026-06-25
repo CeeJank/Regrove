@@ -100,7 +100,7 @@ export interface ChildDocumentation {
   hobbies: string;
   cansItems: CANSItem[];
   lastUpdated: string;
-  /** Youth Catalog summary — a brief overview written by the SW */
+  /** Child Catalog summary — a brief overview written by the SW */
   summary?: string;
   /** Extra notes auto-populated from meetup sessions and messages */
   extraNotes?: string;
