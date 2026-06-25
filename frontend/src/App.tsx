@@ -1,15 +1,33 @@
+<<<<<<< HEAD
 /*import { BrowserRouter, Route, Routes } from "react-router-dom";
 import ChildProfilePage from "./pages/ChildProfilePage";
 import DashboardPage from "./pages/DashboardPage";
 import HomePage from "./pages/HomePage";
 import RecordingPage from "./pages/RecordingPage";
 import YouthCataloguePage from "./pages/YouthCataloguePage";
+=======
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+
+// Pages
+import ChildProfilePage       from "./pages/ChildProfilePage";
+import DashboardPage          from "./pages/DashboardPage";
+import HomePage               from "./pages/HomePage";
+import RecordingPage          from "./pages/RecordingPage";
+import YouthCataloguePage     from "./pages/YouthCataloguePage";
+>>>>>>> 682a214 (Finish logins for youth and worker with jwt and bcrypt credentials)
 import CreateYouthProfilePage from "./pages/CreateYouthProfilePage";
+import LoginPage              from "./pages/LoginPage";
+
+// ProtectedRoute wraps routes that require an authenticated session.
+// It redirects to /login when no JWT is found in localStorage.
+import ProtectedRoute from "./components/ProtectedRoute";
+
 import "./styles/app.css";
 */
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
+<<<<<<< HEAD
 // Contexts
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { CasesProvider } from './contexts/CasesContext';
@@ -83,6 +101,47 @@ const AppRoutes = () => {
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+=======
+// ─── App ──────────────────────────────────────────────────────────────────────
+// Root component. Defines the full client-side routing table.
+//
+// Public routes  (no auth required):
+//   /          — home
+//   /login     — login form
+//
+// Legacy routes (pre-existing, auth handled individually):
+//   /children/:childId
+//   /children/:childId/session/:sessionId
+//   /dashboard
+//
+// Protected routes (JWT required — ProtectedRoute redirects to /login):
+//   /youth          — youth catalogue (worker/admin only)
+//   /youth/create   — create youth profile (worker/admin only)
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        {/* Public */}
+        <Route path="/" element={<HomePage />} />
+        <Route path="/login" element={<LoginPage />} />
+
+        {/* Legacy routes */}
+        <Route path="/children/:childId/session/:sessionId" element={<RecordingPage />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/children/:childId" element={<ChildProfilePage />} />
+
+        {/* Protected — redirect to /login if no token in localStorage */}
+        <Route
+          path="/youth"
+          element={<ProtectedRoute><YouthCataloguePage /></ProtectedRoute>}
+        />
+        <Route
+          path="/youth/create"
+          element={<ProtectedRoute><CreateYouthProfilePage /></ProtectedRoute>}
+        />
+      </Routes>
+    </BrowserRouter>
+>>>>>>> 682a214 (Finish logins for youth and worker with jwt and bcrypt credentials)
   );
 };
 
