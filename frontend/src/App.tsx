@@ -3,9 +3,14 @@ import ChildProfilePage from "./pages/ChildProfilePage";
 import DashboardPage from "./pages/DashboardPage";
 import HomePage from "./pages/HomePage";
 import RecordingPage from "./pages/RecordingPage";
+<<<<<<< HEAD
 import YouthCataloguePage from "./pages/YouthCataloguePage";
 import CreateYouthProfilePage from "./pages/CreateYouthProfilePage";
 import LoginPage              from "./pages/LoginPage";
+=======
+import TestingPage from "./pages/TestingPage";
+import "./styles/app.css";
+>>>>>>> aab5f39 (Update frontend AI chat box pages)
 
 // ProtectedRoute wraps routes that require an authenticated session.
 // It redirects to /login when no JWT is found in localStorage.
@@ -66,6 +71,7 @@ const ProtectedChildRoute = ({ children }: { children: React.ReactNode }) => {
 const AppRoutes = () => {
   const { user } = useAuth();
   return (
+<<<<<<< HEAD
     <Routes>
       {/* Universal */}
       <Route path="/" element={<MainPage />} />
@@ -89,6 +95,17 @@ const AppRoutes = () => {
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+=======
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/children/:childId/session/:sessionId" element={<RecordingPage />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/children/:childId" element={<ChildProfilePage />} />
+        <Route path="/testing" element={<TestingPage />} />
+      </Routes>
+    </BrowserRouter>
+>>>>>>> aab5f39 (Update frontend AI chat box pages)
   );
 };
 
