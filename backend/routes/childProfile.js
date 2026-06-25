@@ -8,7 +8,12 @@ const {
   saveNotes,
 } = require("../controllers/childProfileController");
 
+<<<<<<< HEAD
 // GET  /api/children/:childId         — fetch full child profile
+=======
+// GET /api/children/:childId
+// Returns detailed profile information for one youth/child.
+>>>>>>> c026cf3 (Refactor AI chat flow and complete handover lifecycle)
 router.get("/:childId", authenticate, getChildProfileById);
 
 // PATCH /api/children/:childId/risk   — update risk level

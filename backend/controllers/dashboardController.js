@@ -1,5 +1,6 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 const { getWorkerProfile, getCasesForWorker, getDashboardStats } = require("../models/dashboardModel");
 
 module.exports = {
@@ -19,8 +20,13 @@ module.exports = {
     }
   },
 =======
+=======
+>>>>>>> c026cf3 (Refactor AI chat flow and complete handover lifecycle)
 const { getRecentChildrenForWorker } = require('../models/dashboardModel');
 
+// Controller responsibility:
+// Return dashboard data for the authenticated worker.
+// Data lookup is delegated to dashboardModel.
 exports.getRecentChildrenForWorker = (req, res) => {
   try {
     const workerId = req.user.workerId;

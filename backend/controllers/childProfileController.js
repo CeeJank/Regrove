@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 const { getChildProfileById } = require('../models/childProfileModel');
 =======
 const {
@@ -13,6 +14,14 @@ const VALID_RISK_LEVELS = ['low', 'medium', 'high', 'critical'];
 
 // GET /api/children/:childId
 exports.getChildProfileById = async (req, res) => {
+=======
+const { getChildProfileById } = require('../models/childProfileModel');
+
+// Controller responsibility:
+// Validate the child/youth ID from the route and return one profile.
+// Profile lookup is delegated to childProfileModel.
+exports.getChildProfileById = (req, res) => {
+>>>>>>> c026cf3 (Refactor AI chat flow and complete handover lifecycle)
   try {
     const childId = parseInt(req.params.childId, 10);
     if (!childId) return res.status(400).json({ message: "Invalid child ID" });

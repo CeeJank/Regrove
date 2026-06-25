@@ -1,5 +1,6 @@
 const pool = require("../config/db");
 
+<<<<<<< HEAD
 module.exports = {
   // Returns the worker's own profile — name and specialization.
   // Used by GET /api/workers/me to display the real name in the UI.
@@ -114,4 +115,13 @@ module.exports = {
     const { rows } = await pool.query(query, [workerId]);
     return rows[0];
   },
+=======
+// Model responsibility:
+// Demo/mock data source for worker dashboard cards.
+// Replace this with PostgreSQL queries when dashboard data is moved fully into the database.
+
+// Returns up to five recent youth profiles assigned to one worker.
+exports.getRecentChildrenForWorker = (workerId) => {
+  return mockRecentChildrenDb.filter((item) => item.workerId === workerId).slice(0, 5);
+>>>>>>> c026cf3 (Refactor AI chat flow and complete handover lifecycle)
 };

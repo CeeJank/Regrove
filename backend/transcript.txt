@@ -1,0 +1,7 @@
+YOUTH: I don't really know how to say this but I haven't been okay
+WORKER: Thank you for telling me, Jun Wei. I want to understand better - can you share what's been happening?
+YOUTH: I've been hurting myself when things get too much, not seriously but it's been happening more
+WORKER: I'm really glad you told me this. Your safety matters a lot to me, and I'm going to make sure you get the right support.
+YOUTH: Hi, I need someone to talk to.
+AI: I'm here to listen. Thank you for sharing that with me. A youth worker may not be available right now, but your message will be shared with them during working hours so they can follow up. Could you tell me a little more about what happened?
+WORKER: hello
