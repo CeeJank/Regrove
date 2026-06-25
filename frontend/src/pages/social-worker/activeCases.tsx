@@ -8,10 +8,17 @@ import { apiFetch } from '../../services/api';
 import ChildSearchBar from '../../components/shared/ChildSearchBar';
 
 const RISK_META: Record<RiskLevel, { bg: string; text: string; label: string }> = {
+<<<<<<< HEAD
   critical: { bg: '#F3E8FF', text: '#7C3AED', label: 'Critical'   },
   high:     { bg: '#FEE2E2', text: '#B91C1C', label: 'High Risk'  },
   medium:   { bg: '#FEF9C3', text: '#92400E', label: 'Medium Risk'},
   low:      { bg: '#DCFCE7', text: '#166534', label: 'Low Risk'   },
+=======
+  critical: { bg: '#EDE9FE', text: '#6D28D9', label: 'Critical' },
+  high:     { bg: '#FEE2E2', text: '#B91C1C', label: 'High Risk' },
+  medium:   { bg: '#FEF9C3', text: '#92400E', label: 'Medium Risk' },
+  low:      { bg: '#DCFCE7', text: '#166534', label: 'Low Risk' },
+>>>>>>> 110c6d7 (updated schema and seed sql to CJ's mocks and started dashboard MVC)
 };
 
 const CANS_RATING_LABELS: Record<number, { label: string; color: string }> = {
@@ -207,6 +214,7 @@ const ActiveCases: React.FC = () => {
           const child = allChildren[activeCase.childId];
           const cansItems = selectedDoc?.cansItems ?? [];
 
+<<<<<<< HEAD
           return (
             <>
               {/* Header */}
@@ -216,6 +224,20 @@ const ActiveCases: React.FC = () => {
                   <p className="page-sub">Case ID: <span className="mono">{activeCase.id}</span></p>
                 </div>
                 <button className="btn btn--danger" onClick={() => setConfirmRemove(true)}>Remove Case</button>
+=======
+            <div className="case-section">
+              <h3 className="case-section-title">Risk Level</h3>
+              <div className="risk-selector">
+                {(['low', 'medium', 'high', 'critical'] as RiskLevel[]).map(lvl => (
+                  <button
+                    key={lvl}
+                    className={`risk-btn risk-btn--${lvl}${activeCase.riskLevel === lvl ? ' risk-btn--selected' : ''}`}
+                    onClick={() => handleRiskChange(lvl)}
+                  >
+                    {lvl.charAt(0).toUpperCase() + lvl.slice(1)}
+                  </button>
+                ))}
+>>>>>>> 110c6d7 (updated schema and seed sql to CJ's mocks and started dashboard MVC)
               </div>
 
               {/* Risk Level */}

@@ -9,8 +9,12 @@ export type RiskLevel = 'critical' | 'high' | 'medium' | 'low';
 // Each roles will be granted different abilties in the website
 
 export type UserRole = 'social_worker' | 'child';
+<<<<<<< HEAD
 export type RiskLevel = 'high' | 'medium' | 'low';
 >>>>>>> 5d704a3 (imported new frontend code and started rebuilding new backend routes)
+=======
+export type RiskLevel = 'critical' | 'high' | 'medium' | 'low';
+>>>>>>> 110c6d7 (updated schema and seed sql to CJ's mocks and started dashboard MVC)
 
 export interface User {
   id: string;
@@ -97,7 +101,13 @@ export interface ActiveCase {
 <<<<<<< HEAD
 =======
   name: string;          // youth's full name, returned directly from API
+<<<<<<< HEAD
 >>>>>>> 5d704a3 (imported new frontend code and started rebuilding new backend routes)
+=======
+  age: number | null;    // from youth_profiles
+  school: string | null; // from youth_profiles
+  category: string | null; // case category e.g. 'Intensive Support'
+>>>>>>> 110c6d7 (updated schema and seed sql to CJ's mocks and started dashboard MVC)
   riskLevel: RiskLevel;
   notes: string;
   aiSummary: string;

@@ -3,9 +3,10 @@ import { useCases } from '../../contexts/CasesContext';
 import { RiskLevel } from '../../types';
 
 const RISK_META: Record<RiskLevel, { bg: string; text: string; dot: string; label: string }> = {
-  high:   { bg: '#FEF2F2', text: '#B91C1C', dot: '#EF4444', label: 'High' },
-  medium: { bg: '#FEFCE8', text: '#92400E', dot: '#EAB308', label: 'Medium' },
-  low:    { bg: '#F0FDF4', text: '#166534', dot: '#22C55E', label: 'Low' },
+  critical: { bg: '#F5F3FF', text: '#6D28D9', dot: '#7C3AED', label: 'Critical' },
+  high:     { bg: '#FEF2F2', text: '#B91C1C', dot: '#EF4444', label: 'High' },
+  medium:   { bg: '#FEFCE8', text: '#92400E', dot: '#EAB308', label: 'Medium' },
+  low:      { bg: '#F0FDF4', text: '#166534', dot: '#22C55E', label: 'Low' },
 };
 
 const Dashboard: React.FC = () => {
@@ -36,8 +37,12 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Stat cards — driven by the stats object returned from the API */}
+      {/* 4 stat cards — critical gets its own purple card */}
       <div className="stat-cards">
+        <div className="stat-card stat-card--purple">
+          <p className="stat-label">Critical</p>
+          <p className="stat-value">{stats?.criticalRisk ?? 0}</p>
+        </div>
         <div className="stat-card stat-card--red">
           <p className="stat-label">High Risk</p>
           <p className="stat-value">{stats?.highRisk ?? 0}</p>
@@ -74,7 +79,6 @@ const Dashboard: React.FC = () => {
                 <tr key={c.id} className="dashboard-row">
                   <td>
                     <div className="cell-user">
-                      {/* First letter of the real name as avatar */}
                       <div className="case-avatar case-avatar--sm">{c.name[0]}</div>
                       <span>{c.name}</span>
                     </div>
@@ -86,7 +90,7 @@ const Dashboard: React.FC = () => {
                     </span>
                   </td>
                   <td className="cell-muted">
-                    {new Date(c.lastUpdated).toLocaleDateString()}
+                    {c.lastUpdated ? new Date(c.lastUpdated).toLocaleDateString() : '—'}
                   </td>
                   <td className="cell-summary">{c.aiSummary}</td>
                 </tr>
