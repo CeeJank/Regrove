@@ -3,6 +3,8 @@ import ChildProfilePage from "./pages/ChildProfilePage";
 import DashboardPage from "./pages/DashboardPage";
 import HomePage from "./pages/HomePage";
 import RecordingPage from "./pages/RecordingPage";
+import YouthCataloguePage from "./pages/YouthCataloguePage";
+import CreateYouthProfilePage from "./pages/CreateYouthProfilePage";
 import "./styles/app.css";
 */
 import React from 'react';
@@ -58,6 +60,7 @@ const ProtectedChildRoute = ({ children }: { children: React.ReactNode }) => {
 const AppRoutes = () => {
   const { user } = useAuth();
   return (
+<<<<<<< HEAD
     <Routes>
       {/* Universal */}
       <Route path="/" element={<MainPage />} />
@@ -81,6 +84,18 @@ const AppRoutes = () => {
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+=======
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/children/:childId/session/:sessionId" element={<RecordingPage />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/children/:childId" element={<ChildProfilePage />} />
+        <Route path="/youth" element={<YouthCataloguePage />} />
+        <Route path="/youth/create" element={<CreateYouthProfilePage />} />
+      </Routes>
+    </BrowserRouter>
+>>>>>>> a46615a (Finish Youth creation, youth cataogue and routing errors.)
   );
 };
 
