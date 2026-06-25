@@ -26,11 +26,11 @@ async function sendLegacyChatMessage({ youthId, message, conversationId }) {
   let aiReply = null;
 
   if (mode === "ai") {
-    const replyText = await generateAIReply(message);
+    const aiResult = await generateAIReply(message);
     aiReply = await chatModel.saveMessage(
       conversation.conversation_id,
       "ai",
-      replyText
+      aiResult.reply
     );
     conversation = await chatModel.markConversationForHandover(
       conversation.conversation_id

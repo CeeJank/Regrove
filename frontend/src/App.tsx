@@ -9,6 +9,10 @@ import CreateYouthProfilePage from "./pages/CreateYouthProfilePage";
 import LoginPage              from "./pages/LoginPage";
 =======
 import TestingPage from "./pages/TestingPage";
+import WorkerHandoverPage from "./pages/WorkerHandoverPage";
+import WorkerReviewPage from "./pages/WorkerReviewPage";
+import YouthChatPage from "./pages/YouthChatPage";
+import YouthSideChatPage from "./pages/YouthSideChatPage";
 import "./styles/app.css";
 >>>>>>> aab5f39 (Update frontend AI chat box pages)
 
@@ -103,6 +107,10 @@ const AppRoutes = () => {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/children/:childId" element={<ChildProfilePage />} />
         <Route path="/testing" element={<TestingPage />} />
+        <Route path="/chat/:conversationId" element={<YouthChatPage />} />
+        <Route path="/youth/chat/:conversationId" element={<YouthSideChatPage />} />
+        <Route path="/worker/handover" element={<WorkerHandoverPage />} />
+        <Route path="/worker/handover/:conversationId" element={<WorkerReviewPage />} />
       </Routes>
     </BrowserRouter>
 >>>>>>> aab5f39 (Update frontend AI chat box pages)
