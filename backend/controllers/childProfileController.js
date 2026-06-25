@@ -1,4 +1,4 @@
-const { getChildProfileById } = require('../model/childProfileModel');
+const { getChildProfileById } = require('../models/childProfileModel');
 
 exports.getChildProfileById = (req, res) => {
   try {

@@ -3,6 +3,8 @@ import ChildProfilePage from "./pages/ChildProfilePage";
 import DashboardPage from "./pages/DashboardPage";
 import HomePage from "./pages/HomePage";
 import RecordingPage from "./pages/RecordingPage";
+import YouthCataloguePage from "./pages/YouthCataloguePage";
+import CreateYouthProfilePage from "./pages/CreateYouthProfilePage";
 import "./styles/app.css";
 */
 import React from 'react';
