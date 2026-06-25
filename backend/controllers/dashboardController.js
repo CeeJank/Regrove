@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 const { getWorkerProfile, getCasesForWorker, getDashboardStats } = require("../models/dashboardModel");
 
 module.exports = {
@@ -16,6 +17,15 @@ module.exports = {
       return res.status(500).json({ message: "Failed to load worker profile" });
     }
   },
+=======
+const { getRecentChildrenForWorker } = require('../models/dashboardModel');
+
+exports.getRecentChildrenForWorker = (req, res) => {
+  try {
+    const workerId = req.user.workerId;
+
+    const data = getRecentChildrenForWorker(workerId);
+>>>>>>> 66f3cc2 (update imports)
 
   // GET /api/workers/dashboard
   // Returns stat card counts + full case list for the logged-in social worker.
