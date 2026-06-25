@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const { authenticateToken, requireWorkerOrAdmin } = require('../middleware/authMiddleware');
-const { getRecentChildrenForWorker } = require('../controllers/dashboardController');
+const { getMe, getDashboard } = require('../controllers/dashboardController');
 
-router.get('/children/recent', authenticateToken, requireWorkerOrAdmin, getRecentChildrenForWorker);
+router.get('/me', authenticateToken, requireWorkerOrAdmin, getMe);
+router.get('/dashboard', authenticateToken, requireWorkerOrAdmin, getDashboard);
 
 module.exports = router;

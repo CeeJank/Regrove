@@ -2,17 +2,19 @@ const { createChildProfileRecord, getAllChildProfiles, getChildProfileRecordById
 
 exports.createChildProfile = async (req, res) => {
   try {
-    const { full_name } = req.body;
+    const { full_name, fullName } = req.body;
+    const resolvedFullName = full_name ?? fullName;
 
-    if (!full_name || full_name.trim() === '') {
+    if (!resolvedFullName || resolvedFullName.trim() === '') {
       return res.status(400).json({ success: false, message: 'full_name is required' });
     }
 
-    const child = await createChildProfileRecord(req.body);
+    const child = await createChildProfileRecord({ ...req.body, full_name: resolvedFullName });
     return res.status(201).json({ success: true, data: child });
   } catch (error) {
     console.error('createChildProfile error:', error);
-    return res.status(500).json({ success: false, message: 'Failed to create child profile' });
+    const status = error.message === 'An account with that email already exists' ? 409 : 500;
+    return res.status(status).json({ success: false, message: error.message || 'Failed to create child profile' });
   }
 };
 

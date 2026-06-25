@@ -10,7 +10,7 @@
  * Requirements:
  *   - .env must exist in the backend/ root with DB_* and JWT_SECRET set
  *   - PostgreSQL must be reachable
- *   - The admin table must already exist (run migrations first)
+ *   - The users table must already exist (run migrations first)
  */
 
 // Resolve .env relative to the backend root, not the scripts/ subdirectory
@@ -53,7 +53,7 @@ async function main() {
 
   try {
     // Guard against accidentally creating a duplicate admin
-    const existing = await pool.query('SELECT id FROM admin WHERE email = $1', [email]);
+    const existing = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
     if (existing.rows.length > 0) {
       console.error(`\nAccount already exists for: ${email}`);
       process.exit(1);
@@ -63,7 +63,7 @@ async function main() {
     const password_hash = await bcrypt.hash(password, 10);
 
     const result = await pool.query(
-      `INSERT INTO admin (email, password_hash, role, is_active)
+      `INSERT INTO users (email, password_hash, role, is_active)
        VALUES ($1, $2, 'admin', true)
        RETURNING id, email, role`,
       [email, password_hash]

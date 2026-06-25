@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { ChildDocumentation, CANSItem } from '../types';
 import { apiFetch } from '../services/api';
+import { useCases } from './CasesContext';
 
 interface DocumentationContextType {
   docs: ChildDocumentation[];
@@ -17,16 +18,46 @@ const DocumentationContext = createContext<DocumentationContextType | undefined>
 
 export const DocumentationProvider = ({ children }: { children: ReactNode }) => {
   const [docs, setDocs] = useState<ChildDocumentation[]>([]);
+  const { cases, allChildren } = useCases();
 
   const getDocByChildId = (childId: string) => docs.find(d => d.childId === childId);
 
   const fetchDocForChild = async (childId: string) => {
     if (docs.some(d => d.childId === childId)) return;
     try {
-      const data = await apiFetch<ChildDocumentation>(`/child/${childId}`);
+      const data = await apiFetch<{
+        childId: number;
+        name: string;
+        age: number | null;
+        riskLevel: string;
+        status: string;
+        analytics: { riskScore: number; sessionCount: number };
+        recentSessions: Array<{ sessionId: number; date: string; summary: string }>;
+      }>(`/children/${childId}`);
+      const linkedCase = cases.find(entry => entry.childId === childId);
+      const child = allChildren[childId];
+      const mapped: ChildDocumentation = {
+        id: String(data.childId),
+        childId: String(data.childId),
+        fullName: data.name,
+        nricLast4: '0000',
+        dateOfBirth: child?.dateOfBirth ?? '',
+        gender: '',
+        race: '',
+        nationality: '',
+        address: '',
+        parentContact: '',
+        school: linkedCase?.school ?? '',
+        level: '',
+        hobbies: '',
+        cansItems: [],
+        lastUpdated: new Date().toISOString(),
+        summary: data.recentSessions?.[0]?.summary ?? linkedCase?.aiSummary ?? '',
+        extraNotes: linkedCase?.notes ?? '',
+      };
       setDocs(prev => {
         if (prev.some(d => d.childId === childId)) return prev;
-        return [...prev, { ...data, lastUpdated: new Date().toISOString() }];
+        return [...prev, mapped];
       });
     } catch {}
   };

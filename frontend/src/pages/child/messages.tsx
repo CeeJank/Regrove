@@ -1,24 +1,26 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useMessages } from '../../contexts/MessagesContext';
-
-const WORKER = { id: 'worker-1', name: 'Sarah Chen', avatar: 'S' };
+import { useCases } from '../../contexts/CasesContext';
 
 const ChildMessages: React.FC = () => {
   const { user } = useAuth();
   const { getConversation, sendMessage } = useMessages();
+  const { allWorkers } = useCases();
   const [input, setInput] = useState('');
   const [callType, setCallType] = useState<'voice' | 'video' | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
-  const conversation = user ? getConversation(user.id, WORKER.id) : [];
+  const worker = Object.entries(allWorkers)[0]?.[1] ?? null;
+  const workerId = worker?.userId ?? '';
+  const conversation = user && workerId ? getConversation(user.id, workerId) : [];
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [conversation]);
 
-  const handleSend = () => {
-    if (!input.trim() || !user) return;
-    sendMessage({ senderId: user.id, receiverId: WORKER.id, content: input.trim(), type: 'text' });
+  const handleSend = async () => {
+    if (!input.trim() || !user || !workerId) return;
+    await sendMessage({ senderId: user.id, receiverId: workerId, content: input.trim(), type: 'text' });
     setInput('');
   };
 
@@ -28,9 +30,9 @@ const ChildMessages: React.FC = () => {
     <div className="messages-layout messages-layout--full">
       <div className="chat-area">
         <div className="chat-header">
-          <div className="contact-avatar contact-avatar--lg">{WORKER.avatar}</div>
+          <div className="contact-avatar contact-avatar--lg">{worker?.name?.[0] ?? 'S'}</div>
           <div>
-            <p className="chat-contact-name">{WORKER.name}</p>
+            <p className="chat-contact-name">{worker?.name ?? 'Social Worker'}</p>
             <p className="chat-contact-sub">Your Social Worker</p>
           </div>
           <div className="chat-actions">
@@ -47,7 +49,7 @@ const ChildMessages: React.FC = () => {
             const isMine = msg.senderId === user?.id;
             return (
               <div key={msg.id} className={`msg-row${isMine ? ' msg-row--mine' : ''}`}>
-                {!isMine && <div className="contact-avatar contact-avatar--xs">{WORKER.avatar}</div>}
+                {!isMine && <div className="contact-avatar contact-avatar--xs">{worker?.name?.[0] ?? 'S'}</div>}
                 <div className={`msg-bubble${isMine ? ' msg-bubble--mine' : ''}`}>
                   <p>{msg.content}</p>
                   <span className="msg-time">{new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
@@ -75,7 +77,7 @@ const ChildMessages: React.FC = () => {
         <div className="modal-overlay" onClick={() => setCallType(null)}>
           <div className="modal modal--call" onClick={e => e.stopPropagation()}>
             <div className="call-icon">{callType === 'voice' ? '📞' : '📹'}</div>
-            <h2>{callType === 'voice' ? 'Voice' : 'Video'} Call with {WORKER.name}</h2>
+            <h2>{callType === 'voice' ? 'Voice' : 'Video'} Call with {worker?.name ?? 'Social Worker'}</h2>
             <button className="btn btn--danger" onClick={() => setCallType(null)}>End Call</button>
           </div>
         </div>

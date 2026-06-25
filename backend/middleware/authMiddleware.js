@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const pool = require('../config/db');
 
 // ─── authenticateToken ────────────────────────────────────────────────────────
 // Express middleware that reads the Authorization header, extracts the JWT,
@@ -12,7 +13,7 @@ const jwt = require('jsonwebtoken');
 // On failure:   returns 401 with a JSON error — the request stops here
 //
 // This must run BEFORE any role-check middleware (requireWorkerOrAdmin, requireAdmin).
-const authenticateToken = (req, res, next) => {
+const authenticateToken = async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
   // Extract token from "Bearer <token>" — reject anything that doesn't match
@@ -28,8 +29,29 @@ const authenticateToken = (req, res, next) => {
     // jwt.verify throws if the token is expired, tampered with, or signed with a different secret
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Attach the decoded payload so controllers can read req.user.userId and req.user.role
-    req.user = decoded; // shape: { userId, role, iat, exp }
+    // Resolve profile ids as well because most domain tables reference
+    // worker_profiles.id / youth_profiles.id rather than users.id.
+    const resolvedUser = { ...decoded, workerId: null, childId: null };
+
+    if (decoded.role === 'worker' || decoded.role === 'admin') {
+      const workerResult = await pool.query(
+        'SELECT id FROM worker_profiles WHERE user_id = $1 LIMIT 1',
+        [decoded.userId]
+      );
+      resolvedUser.workerId = workerResult.rows[0]?.id ?? null;
+    }
+
+    if (decoded.role === 'youth') {
+      const childResult = await pool.query(
+        'SELECT id FROM youth_profiles WHERE user_id = $1 LIMIT 1',
+        [decoded.userId]
+      );
+      resolvedUser.childId = childResult.rows[0]?.id ?? null;
+    }
+
+    // Attach the decoded payload so controllers can read req.user.userId,
+    // req.user.workerId / req.user.childId, and req.user.role.
+    req.user = resolvedUser;
     return next();
   } catch (error) {
     // Distinguish expired tokens from outright invalid ones for a clearer client message

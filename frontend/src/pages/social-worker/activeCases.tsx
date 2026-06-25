@@ -226,7 +226,14 @@ const ActiveCases: React.FC = () => {
                     <button
                       key={lvl}
                       className={`risk-btn risk-btn--${lvl}${activeCase.riskLevel === lvl ? ' risk-btn--selected' : ''}`}
-                      onClick={() => { updateRiskLevel(activeCase.id, lvl); notify(`Risk updated to ${lvl}.`); }}
+                      onClick={async () => {
+                        try {
+                          await updateRiskLevel(activeCase.id, lvl);
+                          notify(`Risk updated to ${lvl}.`);
+                        } catch {
+                          notify('Failed to update risk.');
+                        }
+                      }}
                     >
                       {lvl.charAt(0).toUpperCase() + lvl.slice(1)}
                     </button>
@@ -286,7 +293,15 @@ const ActiveCases: React.FC = () => {
                       <button className="btn btn--outline btn--sm" onClick={() => setEditingNotes(false)}>Cancel</button>
                       <button
                         className="btn btn--primary btn--sm"
-                        onClick={() => { updateNotes(activeCase.id, noteDraft); setEditingNotes(false); notify('Notes saved.'); }}
+                        onClick={async () => {
+                          try {
+                            await updateNotes(activeCase.id, noteDraft);
+                            setEditingNotes(false);
+                            notify('Notes saved.');
+                          } catch {
+                            notify('Failed to save notes.');
+                          }
+                        }}
                       >
                         Save Notes
                       </button>

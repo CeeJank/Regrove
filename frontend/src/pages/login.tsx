@@ -23,7 +23,7 @@ const LoginPage: React.FC = () => {
     }
     setLoading(true);
     try {
-      const data = await apiFetch<{ token: string; user: User }>('/login', {
+      const data = await apiFetch<{ token: string; user: User }>('/auth/login', {
         method: 'POST',
         body: JSON.stringify({ username: form.username, email: form.email, password: form.password, role }),
       });

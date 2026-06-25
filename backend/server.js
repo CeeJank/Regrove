@@ -14,7 +14,7 @@ if (!process.env.JWT_SECRET) {
 
 const express = require('express');
 const cors = require('cors');
-const routes = require('./routes');
+const routes = require('./routes/indexRoutes');
 const http = require('http');
 
 const pool = require('./config/db');
@@ -52,9 +52,11 @@ app.get('/test-db', async (req, res) => {
 
 app.use('/api', routes);
 
-app.listen(PORT, () => {
-  console.log(`Backend running on port ${PORT}`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Backend running on port ${PORT}`);
+  });
+}
 
 // Export app for testing purposes
 module.exports = app;

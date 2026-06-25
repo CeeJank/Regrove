@@ -81,7 +81,7 @@ export const useCalendarService = (currentDate: Date) => {
           endTime: e.endTime,
           status: e.status || 'PENDING',
           associatedChild: e.associatedChild,
-          origin: 'manual',
+          origin: 'manual' as const,
           pillClass,
           icon: '📅',
           context: e.extraContext

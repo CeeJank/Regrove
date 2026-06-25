@@ -1,23 +1,3 @@
-/*import { BrowserRouter, Route, Routes } from "react-router-dom";
-import ChildProfilePage from "./pages/ChildProfilePage";
-import DashboardPage from "./pages/DashboardPage";
-import HomePage from "./pages/HomePage";
-import RecordingPage from "./pages/RecordingPage";
-<<<<<<< HEAD
-import YouthCataloguePage from "./pages/YouthCataloguePage";
-import CreateYouthProfilePage from "./pages/CreateYouthProfilePage";
-import LoginPage              from "./pages/LoginPage";
-=======
-import TestingPage from "./pages/TestingPage";
-import "./styles/app.css";
->>>>>>> aab5f39 (Update frontend AI chat box pages)
-
-// ProtectedRoute wraps routes that require an authenticated session.
-// It redirects to /login when no JWT is found in localStorage.
-import ProtectedRoute from "./components/ProtectedRoute";
-
-import "./styles/app.css";
-*/
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
@@ -42,7 +22,7 @@ import SWHome from './pages/social-worker/home';
 import SWCalendar from './pages/social-worker/calendar';
 import SWMessages from './pages/social-worker/messages';
 import ActiveCases from './pages/social-worker/activeCases';
-import YouthCatalog from './pages/social-worker/youthCatalog';
+import ChildCatalog from './pages/social-worker/childCatalog';
 
 // Child pages
 import ChildHome from './pages/child/home';
@@ -82,7 +62,7 @@ const AppRoutes = () => {
       <Route path="/sw/calendar"      element={<ProtectedSWRoute><SWCalendar /></ProtectedSWRoute>} />
       <Route path="/sw/messages"      element={<ProtectedSWRoute><SWMessages /></ProtectedSWRoute>} />
       <Route path="/sw/active-cases"  element={<ProtectedSWRoute><ActiveCases /></ProtectedSWRoute>} />
-      <Route path="/sw/youth-catalog" element={<ProtectedSWRoute><YouthCatalog /></ProtectedSWRoute>} />
+      <Route path="/sw/child-catalog" element={<ProtectedSWRoute><ChildCatalog /></ProtectedSWRoute>} />
 
       {/* Child */}
       <Route path="/child/home"      element={<ProtectedChildRoute><ChildHome /></ProtectedChildRoute>} />

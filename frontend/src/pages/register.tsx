@@ -24,7 +24,7 @@ const RegisterPage: React.FC = () => {
     if (form.password !== form.confirm) { setError('Passwords do not match.'); return; }
     setLoading(true);
     try {
-      const data = await apiFetch<{ token: string; user: User }>('/register', {
+      const data = await apiFetch<{ token: string; user: User }>('/auth/register', {
         method: 'POST',
         body: JSON.stringify({
           fullName: form.fullName,

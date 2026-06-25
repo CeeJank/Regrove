@@ -98,6 +98,48 @@ module.exports = {
     return rows;
   },
 
+  // Returns every youth assigned to a worker — id, name, email, username.
+  getChildrenForWorker: async (workerId) => {
+    const { rows } = await pool.query(
+      `SELECT
+         yp.id::text AS id,
+         yp.user_id::text AS "userId",
+         yp.full_name AS name,
+         u.email,
+         split_part(u.email, '@', 1) AS username
+       FROM worker_youth_assignments wya
+       JOIN youth_profiles yp ON yp.id = wya.youth_id
+       LEFT JOIN users u ON u.id = yp.user_id
+       WHERE wya.worker_id = $1
+       ORDER BY yp.full_name ASC`,
+      [workerId]
+    );
+    return rows;
+  },
+
+  // Returns all workers — id, userId, name, email.
+  getAllWorkers: async () => {
+    const { rows } = await pool.query(
+      `SELECT
+         wp.id::text AS id,
+         wp.user_id::text AS "userId",
+         wp.full_name AS name,
+         u.email
+       FROM worker_profiles wp
+       LEFT JOIN users u ON u.id = wp.user_id
+       ORDER BY wp.full_name ASC`
+    );
+    return rows;
+  },
+
+  // Removes a youth from a worker's caseload.
+  removeCaseAssignment: async (workerId, childId) => {
+    await pool.query(
+      'DELETE FROM worker_youth_assignments WHERE worker_id = $1 AND youth_id = $2',
+      [workerId, childId]
+    );
+  },
+
   // Returns risk-level counts for all assigned youth — one COUNT per tier.
   getDashboardStats: async (workerId) => {
     const query = `

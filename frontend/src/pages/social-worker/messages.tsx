@@ -11,7 +11,10 @@ const SWMessages: React.FC = () => {
   const navigate = useNavigate();
 
   const recentContactIds = user ? getRecentContacts(user.id) : [];
-  const defaultContacts = Object.entries(allChildren).slice(0, 10).map(([id]) => id);
+  const defaultContacts = Object.entries(allChildren)
+    .filter(([id, child]) => id === child.profileId)
+    .slice(0, 10)
+    .map(([, child]) => child.userId || child.profileId);
   const contactIds = recentContactIds.length > 0
     ? [...new Set([...recentContactIds, ...defaultContacts])].slice(0, 10)
     : defaultContacts;
@@ -25,11 +28,11 @@ const SWMessages: React.FC = () => {
   const conversation = user && activeContactId ? getConversation(user.id, activeContactId) : [];
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [conversation]);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!input.trim() || !user || !activeContactId) return;
     setError('');
     try {
-      sendMessage({ senderId: user.id, receiverId: activeContactId, content: input.trim(), type: 'text' });
+      await sendMessage({ senderId: user.id, receiverId: activeContactId, content: input.trim(), type: 'text' });
       setInput('');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to send message.');
@@ -38,7 +41,9 @@ const SWMessages: React.FC = () => {
   const handleKey = (e: React.KeyboardEvent) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } };
 
   const filteredIds = search
-    ? Object.entries(allChildren).filter(([, c]) => c.name.toLowerCase().includes(search.toLowerCase())).map(([id]) => id)
+    ? Object.entries(allChildren)
+      .filter(([id, c]) => id === c.profileId && c.name.toLowerCase().includes(search.toLowerCase()))
+      .map(([, child]) => child.userId || child.profileId)
     : contactIds;
 
   const activeChild = activeContactId ? allChildren[activeContactId] : null;

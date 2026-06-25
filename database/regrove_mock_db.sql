@@ -7,7 +7,7 @@
 BEGIN;
 
 INSERT INTO public.users (id, email, password_hash, role, is_active, created_at, updated_at) VALUES
-(1, 'admin@dell.org.sg', '$2b$12$mockhashplaceholder1', 'admin', TRUE, '2025-05-12 10:00:00', '2025-05-12 10:00:00'),
+(1, 'admin@dell.org.sg', '$2b$10$hSteWK/t4ybCCWcrVmAEBexl8PxJeIlY2jWOkT.5yMq3Zz4Ca2T6u', 'admin', TRUE, '2025-05-12 10:00:00', '2025-05-12 10:00:00'),
 (2, 'worker1@dell.org.sg', '$2b$12$mockhashplaceholder2', 'worker', TRUE, '2026-02-02 10:00:00', '2026-02-02 10:00:00'),
 (3, 'worker2@dell.org.sg', '$2b$12$mockhashplaceholder3', 'worker', TRUE, '2025-09-05 10:00:00', '2025-09-05 10:00:00'),
 (4, 'worker3@dell.org.sg', '$2b$12$mockhashplaceholder4', 'worker', TRUE, '2025-05-29 10:00:00', '2025-05-29 10:00:00'),
@@ -24,6 +24,7 @@ INSERT INTO public.users (id, email, password_hash, role, is_active, created_at,
 (15, 'youth10@dell.org.sg', '$2b$12$mockhashplaceholder15', 'youth', TRUE, '2026-04-29 10:00:00', '2026-04-29 10:00:00');
 
 INSERT INTO public.worker_profiles (id, user_id, full_name, specialization, bio, created_at, updated_at) VALUES
+(5, 1, 'Regrove Admin', 'Platform Oversight', 'Development admin account with a mock caseload for local testing and UI verification.', '2025-05-12 10:00:00', '2025-05-12 10:00:00'),
 (1, 2, 'Kumar Abdullah', 'Youth Counselling', 'Youth Counselling caseworker supporting youth and families.', '2026-02-02 10:00:00', '2026-02-02 10:00:00'),
 (2, 3, 'Devi Raj', 'Family Casework', 'Family Casework caseworker supporting youth and families.', '2025-09-05 10:00:00', '2025-09-05 10:00:00'),
 (3, 4, 'Jonathan Abdullah', 'Crisis Intervention', 'Crisis Intervention caseworker supporting youth and families.', '2025-05-29 10:00:00', '2025-05-29 10:00:00'),
@@ -53,7 +54,10 @@ INSERT INTO public.worker_youth_assignments (id, worker_id, youth_id, assigned_a
 (9, 1, 4, '2026-05-07 10:00:00'),
 (10, 2, 8, '2026-04-07 10:00:00'),
 (11, 2, 1, '2026-03-26 10:00:00'),
-(12, 3, 9, '2026-04-02 10:00:00');
+(12, 3, 9, '2026-04-02 10:00:00'),
+(13, 5, 1, '2026-06-01 09:00:00'),
+(14, 5, 6, '2026-06-01 09:05:00'),
+(15, 5, 9, '2026-06-01 09:10:00');
 
 INSERT INTO public.sessions (id, youth_id, worker_id, session_type, status, started_at, ended_at) VALUES
 (1, 1, 4, 'WORKER_CHAT', 'ESCALATED', '2026-06-14 07:00:00', '2026-06-14 07:25:00'),
@@ -66,7 +70,10 @@ INSERT INTO public.sessions (id, youth_id, worker_id, session_type, status, star
 (8, 8, 2, 'WORKER_CHAT', 'COMPLETED', '2026-06-13 10:00:00', '2026-06-13 10:18:00'),
 (9, 9, NULL, 'AI_AFTER_HOURS', 'ESCALATED', '2026-06-15 00:00:00', '2026-06-15 00:18:00'),
 (10, 9, 2, 'WORKER_CHAT', 'COMPLETED', '2026-06-15 16:18:00', '2026-06-15 16:40:00'),
-(11, 10, 4, 'WORKER_CHAT', 'COMPLETED', '2026-06-08 06:00:00', '2026-06-08 06:12:00');
+(11, 10, 4, 'WORKER_CHAT', 'COMPLETED', '2026-06-08 06:00:00', '2026-06-08 06:12:00'),
+(12, 1, 5, 'WORKER_CHAT', 'COMPLETED', '2026-06-22 10:00:00', '2026-06-22 10:28:00'),
+(13, 6, 5, 'WORKER_CHAT', 'COMPLETED', '2026-06-23 14:00:00', '2026-06-23 14:24:00'),
+(14, 9, 5, 'WORKER_CHAT', 'COMPLETED', '2026-06-24 16:00:00', '2026-06-24 16:36:00');
 
 INSERT INTO public.messages (id, session_id, sender_type, message_text, created_at) VALUES
 (1, 1, 'YOUTH', 'I don''t really know how to say this but I haven''t been okay', '2026-06-14 07:00:00'),
@@ -96,7 +103,13 @@ INSERT INTO public.messages (id, session_id, sender_type, message_text, created_
 (25, 10, 'YOUTH', 'hi', '2026-06-15 16:18:00'),
 (26, 10, 'WORKER', 'Hi Nurul Huda, I heard about last night and wanted to check in with you myself. How are you feeling right now?', '2026-06-15 16:40:00'),
 (27, 11, 'YOUTH', 'hi! just wanted to share - my dance group practiced a new routine today', '2026-06-08 06:00:00'),
-(28, 11, 'WORKER', 'That''s great to hear, Yu Xuan! Glad things are going well. Keep it up :)', '2026-06-08 06:12:00');
+(28, 11, 'WORKER', 'That''s great to hear, Yu Xuan! Glad things are going well. Keep it up :)', '2026-06-08 06:12:00'),
+(29, 12, 'YOUTH', 'School has been really overwhelming this week and I''ve been arguing with my mum again.', '2026-06-22 10:00:00'),
+(30, 12, 'WORKER', 'Thanks for being direct about it, Jun Wei. Let''s break down what has been feeling most intense first.', '2026-06-22 10:12:00'),
+(31, 13, 'YOUTH', 'Things at home are still tense, but drawing has helped me calm down a bit.', '2026-06-23 14:00:00'),
+(32, 13, 'WORKER', 'That''s useful to know. Let''s keep using drawing as a coping support while we plan your next family follow-up.', '2026-06-23 14:24:00'),
+(33, 14, 'YOUTH', 'I still feel stressed, but it''s not as bad as last week and my sister has been checking on me.', '2026-06-24 16:00:00'),
+(34, 14, 'WORKER', 'That''s a meaningful improvement. We''ll keep the safety plan active and stay in close contact this week.', '2026-06-24 16:36:00');
 
 INSERT INTO public.ai_summaries (id, session_id, summary_text, created_at) VALUES
 (1, 1, 'Jun Wei disclosed self-harm behaviour during session. CW acknowledged disclosure and flagged for escalation and safety planning.', '2026-06-14 07:29:00'),
@@ -109,7 +122,10 @@ INSERT INTO public.ai_summaries (id, session_id, summary_text, created_at) VALUE
 (8, 8, 'Arun disclosed ongoing stress. CW provided supportive listening; recommend monitoring over next few sessions.', '2026-06-13 10:22:00'),
 (9, 9, 'Nurul Huda expressed passive suicidal ideation during an after-hours chat. AI acknowledged the disclosure, conducted a brief safety check, identified a trusted person (sibling) present at home, and flagged the case for immediate care team follow-up.', '2026-06-15 00:20:00'),
 (10, 10, 'Follow-up check-in after last night''s crisis disclosure. Nurul Huda engaged with CW; continued monitoring recommended.', '2026-06-15 16:44:00'),
-(11, 11, 'Yu Xuan shared a positive update about K-pop dance. No concerns raised; rapport remains good.', '2026-06-08 06:14:00');
+(11, 11, 'Yu Xuan shared a positive update about K-pop dance. No concerns raised; rapport remains good.', '2026-06-08 06:14:00'),
+(12, 12, 'Jun Wei reported school and family stress. Worker prioritized de-escalation, stress mapping, and a follow-up check-in later this week.', '2026-06-22 10:31:00'),
+(13, 13, 'Ong Yu Xuan described continued family tension but identified drawing as a stabilising coping tool. Worker recommended ongoing monitoring and caregiver follow-up.', '2026-06-23 14:28:00'),
+(14, 14, 'Nurul Huda reported modest improvement after crisis follow-up, with sibling support acting as a protective factor. Safety plan remains active.', '2026-06-24 16:41:00');
 
 INSERT INTO public.risk_assessments (id, session_id, risk_level, risk_score, reasoning, created_at) VALUES
 (1, 1, 'HIGH', 5.9, 'Self-harm behaviour disclosed; elevated risk, requires follow-up and safety planning.', '2026-06-14 07:29:00'),
@@ -122,7 +138,10 @@ INSERT INTO public.risk_assessments (id, session_id, risk_level, risk_score, rea
 (8, 8, 'MEDIUM', 2.96, 'Mild stress indicators present; no immediate safety concern identified.', '2026-06-13 10:22:00'),
 (9, 9, 'CRITICAL', 8.03, 'Suicidal ideation disclosed; immediate safety concern, escalated to human care team.', '2026-06-15 00:20:00'),
 (10, 10, 'CRITICAL', 8.07, 'Suicidal ideation disclosed; immediate safety concern, escalated to human care team.', '2026-06-15 16:44:00'),
-(11, 11, 'LOW', 2.25, 'No risk indicators present in this session.', '2026-06-08 06:14:00');
+(11, 11, 'LOW', 2.25, 'No risk indicators present in this session.', '2026-06-08 06:14:00'),
+(12, 12, 'HIGH', 5.4, 'Stress elevated due to school and family conflict; no new self-harm disclosure, but sustained close follow-up is needed.', '2026-06-22 10:31:00'),
+(13, 13, 'MEDIUM', 4.1, 'Family tension persists, though coping strategies are present and engaged.', '2026-06-23 14:28:00'),
+(14, 14, 'HIGH', 6.7, 'Recent crisis remains clinically significant even with modest improvement and protective factors.', '2026-06-24 16:41:00');
 
 INSERT INTO public.escalations (id, session_id, youth_id, escalation_type, description, status, created_at) VALUES
 (1, 1, 1, 'SELF_HARM', 'Self Harm disclosed by Jun Wei during session; flagged for care team review.', 'IN_PROGRESS', '2026-06-14 07:38:00'),
@@ -138,7 +157,10 @@ INSERT INTO public.worker_notes (id, worker_id, youth_id, session_id, note_text,
 (7, 1, 7, 7, 'Met with Hui Min for a routine check-in. Doing well, engaged and positive. No concerns.', '2026-06-09 10:06:00'),
 (8, 2, 8, 8, 'Met with Arun regarding ongoing stress. Plan: continue monitoring, check in again next week.', '2026-06-13 10:49:00'),
 (9, 2, 9, 10, 'Reviewed handover report for Nurul Huda following after-hours crisis disclosure. Conducted in-person follow-up same day. Plan: weekly check-ins, safety plan in place, family informed.', '2026-06-15 17:20:00'),
-(10, 4, 10, 11, 'Met with Yu Xuan for a routine check-in. Doing well, engaged and positive. No concerns.', '2026-06-08 06:36:00');
+(10, 4, 10, 11, 'Met with Yu Xuan for a routine check-in. Doing well, engaged and positive. No concerns.', '2026-06-08 06:36:00'),
+(11, 5, 1, 12, 'Admin development caseload: Jun Wei presented with school and family stress. Plan: follow up on school workload, confirm family meeting availability, and review coping plan.', '2026-06-22 10:36:00'),
+(12, 5, 6, 13, 'Admin development caseload: Ong Yu Xuan remains affected by family tension. Drawing and journaling remain protective coping tools; continue weekly review.', '2026-06-23 14:34:00'),
+(13, 5, 9, 14, 'Admin development caseload: Nurul Huda reports slight improvement after crisis week. Maintain safety plan and high-touch follow-up.', '2026-06-24 16:45:00');
 
 INSERT INTO public.handover_reports (id, youth_id, session_id, summary, recommended_action, reviewed, created_at) VALUES
 (1, 9, 9, 'Nurul Huda disclosed passive suicidal ideation during an after-hours AI chat. Identified sibling present at home as a protective factor. Requires urgent human follow-up.', 'Case worker to conduct in-person or call follow-up within 24 hours; review safety plan.', TRUE, '2026-06-15 00:36:00');
@@ -182,7 +204,13 @@ INSERT INTO public.cans_case (case_id, session_id, youth_id, worker_id, cans_dom
 (27, 10, 9, 2, 5, 'Family Stress', 2, 'Action Needed', 'Nurul Huda continues to experience notable family-related stress. Action needed: CW to coordinate with family services for additional support.'),
 (28, 11, 10, 4, 4, 'Talents/Interests', 0, 'No Evidence', 'Yu Xuan expressed strong interest in K-pop dance. This can serve as a positive avenue for engagement and identity development.'),
 (29, 11, 10, 4, 1, 'School Achievement', 0, 'No Evidence', 'No significant concerns with Yu Xuan''s school performance at this time.'),
-(30, 11, 10, 4, 5, 'Family Stress', 0, 'No Evidence', 'No significant family-related stress identified for Yu Xuan at this time.');
+(30, 11, 10, 4, 5, 'Family Stress', 0, 'No Evidence', 'No significant family-related stress identified for Yu Xuan at this time.'),
+(31, 12, 1, 5, 1, 'School Achievement', 2, 'Action Needed', 'Jun Wei reported falling behind on schoolwork and struggling to regulate stress during the school week.'),
+(32, 12, 1, 5, 5, 'Family Stress', 2, 'Action Needed', 'Family conflict remains a significant pressure point for Jun Wei and is contributing to dysregulation.'),
+(33, 13, 6, 5, 4, 'Talents/Interests', 1, 'Watch', 'Drawing remains a meaningful protective interest for Ong Yu Xuan and should continue to be incorporated into care planning.'),
+(34, 13, 6, 5, 5, 'Family Stress', 1, 'Watch', 'Family tension remains present but currently appears manageable with ongoing support.'),
+(35, 14, 9, 5, 3, 'Suicide Risk', 2, 'Action Needed', 'Recent crisis remains clinically significant despite early improvement; maintain active safety planning.'),
+(36, 14, 9, 5, 7, 'Treatment/Service Persistence', 1, 'Watch', 'Nurul Huda is currently engaged with follow-up support and receptive to continued contact.');
 
 INSERT INTO public.actions (action_id, case_id, hobbies, extra_info, encouragement, created_at) VALUES
 (1, 1, 'floorball', 'CW provided information regarding the VOX Floorball community programme, including training schedule and registration.', 'CW encouraged Jun Wei''s continued interest and participation in floorball.', '2026-06-14 08:34:00'),
@@ -194,15 +222,22 @@ INSERT INTO public.actions (action_id, case_id, hobbies, extra_info, encourageme
 (7, 19, 'art and drawing', 'CW provided information regarding a community art class run by a local arts group.', 'CW encouraged Hui Min''s continued interest and participation in art and drawing.', '2026-06-09 10:12:00'),
 (8, 22, 'playing the guitar', 'CW provided information regarding a beginner guitar class run by a community arts group.', 'CW encouraged Arun''s continued interest and participation in playing the guitar.', '2026-06-13 11:09:00'),
 (9, 25, 'mobile gaming', 'CW provided information regarding a supervised gaming club session at the community centre.', 'CW encouraged Nurul Huda''s continued interest and participation in mobile gaming.', '2026-06-15 17:19:00'),
-(10, 28, 'K-pop dance', 'CW provided information regarding a beginner K-pop dance class run by a community youth group.', 'CW encouraged Yu Xuan''s continued interest and participation in K-pop dance.', '2026-06-08 07:30:00');
+(10, 28, 'K-pop dance', 'CW provided information regarding a beginner K-pop dance class run by a community youth group.', 'CW encouraged Yu Xuan''s continued interest and participation in K-pop dance.', '2026-06-08 07:30:00'),
+(11, 33, 'art and drawing', 'Admin development caseload: provided information on a structured community art programme that can support emotional regulation and social connection.', 'Worker reinforced that drawing is a valid coping strength worth protecting during stressful periods.', '2026-06-23 14:40:00'),
+(12, 35, 'mobile gaming', 'Admin development caseload: reviewed a balanced home routine so gaming remains supervised and does not displace sleep or check-ins.', 'Worker validated Nurul Huda''s progress and encouraged continued use of trusted-family support when stress rises.', '2026-06-24 16:50:00');
 
 INSERT INTO public.events (id, title, description, event_date, start_time, end_time, organizer_id) VALUES
 (1, 'Weekly Counselling Session', 'Discussing academic goals and family updates.', '2026-06-23', '14:00:00', '15:00:00', 1),
-(2, 'Art Therapy Group Workshop', 'Creative self-expression session with peers.', '2026-06-26', '10:00:00', '11:30:00', 1);
+(2, 'Art Therapy Group Workshop', 'Creative self-expression session with peers.', '2026-06-26', '10:00:00', '11:30:00', 1),
+(3, 'Admin Caseload Review', 'Development seed session for viewing worker dashboard and event timelines.', '2026-06-27', '09:30:00', '10:15:00', 5),
+(4, 'Safety Follow-up Call', 'Scheduled follow-up to review coping plan and home support check-in.', '2026-06-28', '16:00:00', '16:30:00', 5);
 
 INSERT INTO public.event_youth_invites (id, event_id, youth_id, status) VALUES
 (1, 1, 2, 'CONFIRMED'),
-(2, 2, 2, 'PENDING');
+(2, 2, 2, 'PENDING'),
+(3, 3, 1, 'CONFIRMED'),
+(4, 3, 6, 'PENDING'),
+(5, 4, 9, 'CONFIRMED');
 
 SELECT setval('public.users_id_seq', COALESCE((SELECT MAX(id) FROM public.users), 1));
 SELECT setval('public.worker_profiles_id_seq', COALESCE((SELECT MAX(id) FROM public.worker_profiles), 1));

@@ -3,8 +3,20 @@ import { ActiveCase, CheckIn, RiskLevel, User } from '../types';
 import { apiFetch } from '../services/api';
 import { useAuth } from './AuthContext';
 
-export type ChildRecord = { name: string; email: string; username: string; dateOfBirth: string };
-export type WorkerRecord = { name: string; email: string };
+export type ChildRecord = {
+  profileId: string;
+  userId: string;
+  name: string;
+  email: string;
+  username: string;
+  dateOfBirth: string;
+};
+export type WorkerRecord = {
+  profileId: string;
+  userId: string;
+  name: string;
+  email: string;
+};
 
 export interface CreateChildForm {
   fullName: string;
@@ -19,10 +31,18 @@ interface CasesContextType {
   allChildren: Record<string, ChildRecord>;
   allWorkers: Record<string, WorkerRecord>;
   loading: boolean;
+  error: string | null;
+  stats?: {
+    totalCases: number;
+    criticalRisk: number;
+    highRisk: number;
+    mediumRisk: number;
+    lowRisk: number;
+  };
   addCheckIn: (caseId: string, checkIn: CheckIn) => void;
   updateAiSummary: (caseId: string, summary: string) => void;
-  updateRiskLevel: (caseId: string, level: RiskLevel) => void;
-  updateNotes: (caseId: string, notes: string) => void;
+  updateRiskLevel: (caseId: string, level: RiskLevel) => Promise<void>;
+  updateNotes: (caseId: string, notes: string) => Promise<void>;
   removeCase: (caseId: string) => Promise<void>;
   getCaseByChildId: (childId: string) => ActiveCase | undefined;
   addChildAccount: (form: CreateChildForm) => Promise<void>;
@@ -39,18 +59,22 @@ export const CasesProvider = ({ children }: { children: ReactNode }) => {
   const [allChildren, setAllChildren] = useState<Record<string, ChildRecord>>({});
   const [allWorkers, setAllWorkers] = useState<Record<string, WorkerRecord>>({});
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [recentMap, setRecentMap] = useState<Record<string, string[]>>({});
 
   useEffect(() => {
     if (!user) return;
     setLoading(true);
+    setError(null);
     apiFetch<{ cases: ActiveCase[]; children?: Record<string, ChildRecord>; workers?: Record<string, WorkerRecord> }>('/active/')
       .then(data => {
         setCases(data.cases ?? (Array.isArray(data) ? (data as ActiveCase[]) : []));
         if (data.children) setAllChildren(data.children);
         if (data.workers) setAllWorkers(data.workers);
       })
-      .catch(() => {})
+      .catch((err) => {
+        setError(err instanceof Error ? err.message : 'Failed to load cases');
+      })
       .finally(() => setLoading(false));
   }, [user?.id]);
 
@@ -68,12 +92,38 @@ export const CasesProvider = ({ children }: { children: ReactNode }) => {
     ));
   };
 
-  const updateRiskLevel = (caseId: string, level: RiskLevel) => {
+  const updateRiskLevel = async (caseId: string, level: RiskLevel) => {
+    const targetCase = cases.find(c => c.id === caseId);
+    if (!targetCase) return;
+
     setCases(prev => prev.map(c => c.id === caseId ? { ...c, riskLevel: level } : c));
+
+    try {
+      await apiFetch(`/children/${targetCase.childId}/risk`, {
+        method: 'PATCH',
+        body: JSON.stringify({ riskLevel: level }),
+      });
+    } catch (error) {
+      setCases(prev => prev.map(c => c.id === caseId ? { ...c, riskLevel: targetCase.riskLevel } : c));
+      throw error;
+    }
   };
 
-  const updateNotes = (caseId: string, notes: string) => {
+  const updateNotes = async (caseId: string, notes: string) => {
+    const targetCase = cases.find(c => c.id === caseId);
+    if (!targetCase) return;
+
     setCases(prev => prev.map(c => c.id === caseId ? { ...c, notes } : c));
+
+    try {
+      await apiFetch(`/children/${targetCase.childId}/notes`, {
+        method: 'PATCH',
+        body: JSON.stringify({ notes }),
+      });
+    } catch (error) {
+      setCases(prev => prev.map(c => c.id === caseId ? { ...c, notes: targetCase.notes } : c));
+      throw error;
+    }
   };
 
   const removeCase = async (caseId: string) => {
@@ -86,23 +136,32 @@ export const CasesProvider = ({ children }: { children: ReactNode }) => {
   const getCaseByChildId = (childId: string) => cases.find(c => c.childId === childId);
 
   const addChildAccount = async (form: CreateChildForm) => {
-    const created = await apiFetch<{ id: string; fullName: string; email: string; username: string; dateOfBirth: string }>('/child', {
+    const createdResponse = await apiFetch<{ success: boolean; data: { id: number; user_id?: number | null; full_name: string } }>('/child', {
       method: 'POST',
-      body: JSON.stringify(form),
+      body: JSON.stringify({
+        full_name: form.fullName,
+        username: form.username,
+        email: form.email,
+        password: form.password,
+        dateOfBirth: form.dateOfBirth,
+      }),
     });
+    const created = createdResponse.data;
     setAllChildren(prev => ({
       ...prev,
-      [created.id]: {
-        name: created.fullName,
-        email: created.email,
-        username: created.username,
-        dateOfBirth: created.dateOfBirth,
+      [String(created.id)]: {
+        profileId: String(created.id),
+        userId: created.user_id ? String(created.user_id) : '',
+        name: created.full_name,
+        email: form.email,
+        username: form.username,
+        dateOfBirth: form.dateOfBirth,
       },
     }));
     if (user) {
       setRecentMap(prev => {
         const list = prev[user.id] ?? [];
-        return { ...prev, [user.id]: [created.id, ...list.filter(id => id !== created.id)] };
+        return { ...prev, [user.id]: [String(created.id), ...list.filter(id => id !== String(created.id))] };
       });
     }
   };
@@ -126,7 +185,14 @@ export const CasesProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <CasesContext.Provider value={{
-      cases, allChildren, allWorkers, loading,
+      cases, allChildren, allWorkers, loading, error,
+      stats: {
+        totalCases: cases.length,
+        criticalRisk: cases.filter(c => c.riskLevel === 'critical').length,
+        highRisk: cases.filter(c => c.riskLevel === 'high').length,
+        mediumRisk: cases.filter(c => c.riskLevel === 'medium').length,
+        lowRisk: cases.filter(c => c.riskLevel === 'low').length,
+      },
       addCheckIn, updateAiSummary, updateRiskLevel, updateNotes,
       removeCase, getCaseByChildId, addChildAccount,
       updateRecentInteraction, getRecentChildren, appendMeetupSummary,

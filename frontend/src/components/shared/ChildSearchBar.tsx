@@ -12,11 +12,11 @@ const ChildSearchBar: React.FC<Props> = ({ onSelect, placeholder = 'Search for a
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
   const { allChildren } = useCases();
-  const { user } = useAuth();
   const ref = useRef<HTMLDivElement>(null);
 
+  const uniqueChildren = Object.entries(allChildren).filter(([id, child]) => id === child.profileId);
   const results = query.length >= 1
-    ? Object.entries(allChildren).filter(([, c]) => c.name.toLowerCase().includes(query.toLowerCase())).slice(0, 8)
+    ? uniqueChildren.filter(([, c]) => c.name.toLowerCase().includes(query.toLowerCase())).slice(0, 8)
     : [];
 
   useEffect(() => {

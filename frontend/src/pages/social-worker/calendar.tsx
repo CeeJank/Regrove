@@ -65,7 +65,10 @@ const SWCalendar: React.FC = () => {
   const selectedEvents = selectedDate ? userEvents.filter(e => e.date === selectedDate) : [];
 
   const childSuggestions = Object.entries(allChildren).filter(([id, c]) =>
-    childSearch && c.name.toLowerCase().includes(childSearch.toLowerCase()) && !form.childIds.includes(id)
+    id === c.profileId &&
+    childSearch &&
+    c.name.toLowerCase().includes(childSearch.toLowerCase()) &&
+    !form.childIds.includes(id)
   ).slice(0, 5);
 
   const workerSuggestions = Object.entries(allWorkers).filter(([id, w]) =>
