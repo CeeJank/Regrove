@@ -27,10 +27,14 @@ const ChildCalendar: React.FC = () => {
 
   const selectedEvents = selected ? userEvents.filter(e => e.date === selected) : [];
 
-  const respond = (id: string, accept: boolean) => {
+  const respond = async (id: string, accept: boolean) => {
     if (!user) return;
-    respondToEvent(id, user.id, accept);
-    setNotification(accept ? '✅ Event accepted!' : '❌ Event declined.');
+    try {
+      await respondToEvent(id, user.id, accept);
+      setNotification(accept ? '✅ Event accepted!' : '❌ Event declined.');
+    } catch {
+      setNotification('Failed to respond. Please try again.');
+    }
     setTimeout(() => setNotification(''), 3000);
   };
 

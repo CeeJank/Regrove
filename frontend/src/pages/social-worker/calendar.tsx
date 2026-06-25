@@ -19,7 +19,7 @@ const SWCalendar: React.FC = () => {
   const [workerSearch, setWorkerSearch] = useState('');
   const [form, setForm] = useState({
     title: '', date: '', startTime: '09:00', endTime: '10:00',
-    workerIds: user?.id ? [user.id] : ['worker-1'],
+    workerIds: user?.id ? [user.id] : [],
     childIds: [] as string[],
   });
 
@@ -34,23 +34,31 @@ const SWCalendar: React.FC = () => {
     return userEvents.filter(e => e.date === dateStr);
   };
 
-  const handleCreate = (e: React.FormEvent) => {
+  const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
     if (form.childIds.length === 0) { alert('Please add at least one child.'); return; }
     const inviteStatuses: Record<string, 'pending' | 'accepted' | 'declined'> = {};
     form.workerIds.forEach(id => { inviteStatuses[id] = id === user.id ? 'accepted' : 'pending'; });
     form.childIds.forEach(id => { inviteStatuses[id] = 'pending'; });
-    createEvent({ ...form, organizerId: user.id, status: 'pending', inviteStatuses });
-    setShowCreate(false);
-    setForm({ title: '', date: '', startTime: '09:00', endTime: '10:00', workerIds: [user.id], childIds: [] });
-    setChildSearch(''); setWorkerSearch('');
+    try {
+      await createEvent({ ...form, organizerId: user.id, status: 'pending', inviteStatuses });
+      setShowCreate(false);
+      setForm({ title: '', date: '', startTime: '09:00', endTime: '10:00', workerIds: [user.id], childIds: [] });
+      setChildSearch(''); setWorkerSearch('');
+    } catch {
+      alert('Failed to create event. Please try again.');
+    }
   };
 
-  const handleDelete = (evt: CalendarEvent) => {
+  const handleDelete = async (evt: CalendarEvent) => {
     if (!user) return;
-    const ok = deleteEvent(evt.id, user.id);
-    setDeleteMsg(ok ? 'Event deleted.' : 'Only the organizer can delete this event.');
+    try {
+      const ok = await deleteEvent(evt.id, user.id);
+      setDeleteMsg(ok ? 'Event deleted.' : 'Only the organizer can delete this event.');
+    } catch {
+      setDeleteMsg('Failed to delete event.');
+    }
     setTimeout(() => setDeleteMsg(''), 3000);
   };
 

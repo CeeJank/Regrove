@@ -11,20 +11,18 @@ interface MessagesContextType {
 const MessagesContext = createContext<MessagesContextType | undefined>(undefined);
 
 export const MessagesProvider = ({ children }: { children: ReactNode }) => {
-  const [messages, setMessages] = useState<Message[]>([
-    { id: 'msg-1', senderId: 'worker-1', receiverId: 'child-1', content: 'Hi Alex, how are you feeling today?', timestamp: new Date(Date.now() - 3600000).toISOString(), type: 'text' },
-    { id: 'msg-2', senderId: 'child-1', receiverId: 'worker-1', content: "I'm doing okay, a bit stressed about school.", timestamp: new Date(Date.now() - 3000000).toISOString(), type: 'text' },
-    { id: 'msg-3', senderId: 'worker-1', receiverId: 'child-1', content: "That's understandable. Let's talk about it in our session.", timestamp: new Date(Date.now() - 1800000).toISOString(), type: 'text' },
-  ]);
+  const [messages] = useState<Message[]>([]);
 
   const sendMessage = (msg: Omit<Message, 'id' | 'timestamp'>) => {
-    const newMsg: Message = { ...msg, id: `msg-${Date.now()}`, timestamp: new Date().toISOString() };
-    setMessages(prev => [...prev, newMsg]);
+    throw new Error('Messaging backend not implemented.');
   };
 
   const getConversation = (userA: string, userB: string) =>
     messages
-      .filter(m => (m.senderId === userA && m.receiverId === userB) || (m.senderId === userB && m.receiverId === userA))
+      .filter(m =>
+        (m.senderId === userA && m.receiverId === userB) ||
+        (m.senderId === userB && m.receiverId === userA)
+      )
       .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
 
   const getRecentContacts = (userId: string) => {

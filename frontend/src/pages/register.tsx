@@ -1,30 +1,45 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { User } from '../types';
 import { useAuth } from '../contexts/AuthContext';
+import { apiFetch } from '../services/api';
 import bgImage from '../images/background/Bg1.png';
 
 const RegisterPage: React.FC = () => {
   const [form, setForm] = useState({ fullName: '', username: '', email: '', password: '', confirm: '' });
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm(f => ({ ...f, [k]: e.target.value }));
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     if (!form.fullName || !form.username || !form.email || !form.password) {
       setError('Please fill in all required fields.'); return;
     }
     if (form.password !== form.confirm) { setError('Passwords do not match.'); return; }
-    const mockUser = {
-      id: `worker-${Date.now()}`, fullName: form.fullName, username: form.username,
-      email: form.email, role: 'social_worker' as const,
-    };
-    login(mockUser as any);
-    navigate('/sw/home');
+    setLoading(true);
+    try {
+      const data = await apiFetch<{ token: string; user: User }>('/register', {
+        method: 'POST',
+        body: JSON.stringify({
+          fullName: form.fullName,
+          username: form.username,
+          email: form.email,
+          password: form.password,
+        }),
+      });
+      login(data.user, data.token);
+      navigate('/sw/home');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Registration failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -66,7 +81,9 @@ const RegisterPage: React.FC = () => {
             </div>
           </div>
           {error && <p className="form-error">{error}</p>}
-          <button type="submit" className="btn btn--primary btn--full">Create Account</button>
+          <button type="submit" className="btn btn--primary btn--full" disabled={loading}>
+            {loading ? 'Creating account…' : 'Create Account'}
+          </button>
         </form>
         <p className="auth-switch">Already have an account? <Link to="/login" className="auth-link">Sign in</Link></p>
       </div>

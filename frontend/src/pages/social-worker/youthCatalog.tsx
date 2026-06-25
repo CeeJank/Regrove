@@ -3,20 +3,13 @@ import { useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCases } from '../../contexts/CasesContext';
 import { useDocumentation } from '../../contexts/DocumentationContext';
-import { ChildDocumentation, User } from '../../types';
+import { ChildDocumentation } from '../../types';
 import ChildSearchBar from '../../components/shared/ChildSearchBar';
-
-const EMPTY_DOC = (childId: string): ChildDocumentation => ({
-  id: `doc-${Date.now()}`, childId, fullName: '', nricLast4: '', dateOfBirth: '',
-  gender: '', race: '', nationality: '', address: '', parentContact: '',
-  school: '', level: '', hobbies: '', cansItems: '',
-  summary: '', extraNotes: '', lastUpdated: new Date().toISOString(),
-} as unknown as ChildDocumentation);
 
 const YouthCatalog: React.FC = () => {
   const { user } = useAuth();
   const { cases, allChildren, getRecentChildren, updateRecentInteraction, addChildAccount } = useCases();
-  const { docs, upsertDoc, updateSummary, appendExtraNotes } = useDocumentation();
+  const { docs, upsertDoc, updateSummary, appendExtraNotes, fetchDocForChild } = useDocumentation();
   const location = useLocation();
 
   const urlParams  = new URLSearchParams(location.search);
@@ -54,10 +47,15 @@ const YouthCatalog: React.FC = () => {
   });
   const [childFormError, setChildFormError] = useState('');
 
-  const doc   = selectedChildId
-    ? (docs.find(d => d.childId === selectedChildId) ?? EMPTY_DOC(selectedChildId))
+  const doc = selectedChildId
+    ? (docs.find(d => d.childId === selectedChildId) ?? null)
     : null;
   const [draft, setDraft] = useState<ChildDocumentation | null>(null);
+
+  useEffect(() => {
+    if (!selectedChildId) return;
+    void fetchDocForChild(selectedChildId);
+  }, [selectedChildId, fetchDocForChild]);
 
   const notify = (msg: string) => { setNotification(msg); setTimeout(() => setNotification(''), 3000); };
 
@@ -87,20 +85,31 @@ const YouthCatalog: React.FC = () => {
     notify('Extra note added.');
   };
 
-  const handleCreateChild = (e: React.FormEvent) => {
+  const [creatingChild, setCreatingChild] = useState(false);
+
+  const handleCreateChild = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!childForm.fullName || !childForm.username || !childForm.email || !childForm.password || !childForm.dateOfBirth) {
       setChildFormError('All fields are required.'); return;
     }
-    const newChild: User = {
-      id: `child-${Date.now()}`, fullName: childForm.fullName, username: childForm.username,
-      email: childForm.email, role: 'child', dateOfBirth: childForm.dateOfBirth,
-    };
-    addChildAccount(newChild);
-    if (user) updateRecentInteraction(user.id, newChild.id);
-    setShowCreateChild(false);
-    setChildForm({ fullName: '', dateOfBirth: '', username: '', email: '', password: '' });
-    notify(`Account created for ${childForm.fullName}.`);
+    setCreatingChild(true);
+    setChildFormError('');
+    try {
+      await addChildAccount({
+        fullName: childForm.fullName,
+        username: childForm.username,
+        email: childForm.email,
+        password: childForm.password,
+        dateOfBirth: childForm.dateOfBirth,
+      });
+      setShowCreateChild(false);
+      setChildForm({ fullName: '', dateOfBirth: '', username: '', email: '', password: '' });
+      notify(`Account created for ${childForm.fullName}.`);
+    } catch (err) {
+      setChildFormError(err instanceof Error ? err.message : 'Failed to create account. Please try again.');
+    } finally {
+      setCreatingChild(false);
+    }
   };
 
   const current = editing ? draft : doc;
@@ -160,179 +169,187 @@ const YouthCatalog: React.FC = () => {
                 <h1 className="page-title">{allChildren[selectedChildId]?.name ?? selectedChildId}</h1>
                 <p className="page-sub">Youth Catalog &amp; Documentation</p>
               </div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                {editing ? (
-                  <>
-                    <button className="btn btn--outline" onClick={() => setEditing(false)}>Cancel</button>
-                    <button className="btn btn--primary" onClick={handleSave}>Save</button>
-                  </>
-                ) : (
-                  <button className="btn btn--primary" onClick={handleEdit}>Edit Profile</button>
-                )}
-              </div>
-            </div>
-
-            {/* ── Summary Section ── */}
-            <div className="case-section">
-              <div className="case-section-header">
-                <h3 className="case-section-title">Summary</h3>
-                {!editingSummary && (
-                  <button
-                    className="btn btn--outline btn--sm"
-                    onClick={() => { setSummaryDraft(doc?.summary ?? ''); setEditingSummary(true); }}
-                  >
-                    Edit
-                  </button>
-                )}
-              </div>
-              {editingSummary ? (
-                <>
-                  <textarea
-                    className="form-input notes-textarea"
-                    rows={4}
-                    placeholder="Write a brief overview of this youth's background, progress, and current situation..."
-                    value={summaryDraft}
-                    onChange={e => setSummaryDraft(e.target.value)}
-                  />
-                  <div className="modal-actions" style={{ marginTop: '0.75rem' }}>
-                    <button className="btn btn--outline btn--sm" onClick={() => setEditingSummary(false)}>Cancel</button>
-                    <button className="btn btn--primary btn--sm" onClick={handleSaveSummary}>Save Summary</button>
-                  </div>
-                </>
-              ) : (
-                <p className="notes-display">
-                  {doc?.summary || 'No summary yet. Click Edit to add one.'}
-                </p>
-              )}
-            </div>
-
-            {/* ── Personal Information ── */}
-            <div className="case-section">
-              <h3 className="case-section-title">Personal Information</h3>
-              <div className="doc-grid">
-                {([
-                  ['Full Name',     'fullName'],
-                  ['NRIC (Last 4)', 'nricLast4'],
-                  ['Date of Birth', 'dateOfBirth', 'date'],
-                  ['Gender',        'gender'],
-                  ['Race',          'race'],
-                  ['Nationality',   'nationality'],
-                ] as [string, keyof ChildDocumentation, string?][]).map(([label, key, type]) => (
-                  <div key={key} className="form-group">
-                    <label className="form-label">{label}</label>
-                    {editing ? (
-                      <input
-                        className="form-input"
-                        type={type ?? 'text'}
-                        value={String(draft?.[key] ?? '')}
-                        onChange={e => setDraft(d => d ? { ...d, [key]: e.target.value } : d)}
-                      />
-                    ) : (
-                      <p className="doc-field-val">{String(current[key] || '—')}</p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* ── Contact & School ── */}
-            <div className="case-section">
-              <h3 className="case-section-title">Contact &amp; School</h3>
-              <div className="doc-grid">
-                {([
-                  ['Address',             'address'],
-                  ['Parent Contact',      'parentContact'],
-                  ['School',              'school'],
-                  ['Level / Year',        'level'],
-                  ['Hobbies / Interests', 'hobbies'],
-                ] as [string, keyof ChildDocumentation][]).map(([label, key]) => (
-                  <div key={key} className="form-group">
-                    <label className="form-label">{label}</label>
-                    {editing ? (
-                      <input
-                        className="form-input"
-                        value={String(draft?.[key] ?? '')}
-                        onChange={e => setDraft(d => d ? { ...d, [key]: e.target.value } : d)}
-                      />
-                    ) : (
-                      <p className="doc-field-val">{String(current[key] || '—')}</p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* ── Extra Notes ── */}
-            <div className="case-section">
-              <div className="case-section-header">
-                <h3 className="case-section-title">Extra Notes</h3>
-                <button
-                  className="btn btn--outline btn--sm"
-                  onClick={() => setShowExtraInput(v => !v)}
-                >
-                  {showExtraInput ? 'Cancel' : '+ Add Note'}
-                </button>
-              </div>
-              <p style={{ fontSize: 13, color: 'var(--text-soft)', marginBottom: 10 }}>
-                Additional observations, referral notes, or supplementary documentation from meetup sessions and chatbot interactions will appear here.
-              </p>
-
-              {showExtraInput && (
-                <div style={{ marginBottom: 14 }}>
-                  <textarea
-                    className="form-input"
-                    rows={3}
-                    placeholder="Add an extra note or observation..."
-                    value={extraNoteInput}
-                    onChange={e => setExtraNoteInput(e.target.value)}
-                  />
-                  <div className="modal-actions" style={{ marginTop: 8 }}>
-                    <button className="btn btn--primary btn--sm" onClick={handleAddExtraNote}>Save Note</button>
-                  </div>
+              {doc && (
+                <div style={{ display: 'flex', gap: 8 }}>
+                  {editing ? (
+                    <>
+                      <button className="btn btn--outline" onClick={() => setEditing(false)}>Cancel</button>
+                      <button className="btn btn--primary" onClick={handleSave}>Save</button>
+                    </>
+                  ) : (
+                    <button className="btn btn--primary" onClick={handleEdit}>Edit Profile</button>
+                  )}
                 </div>
               )}
+            </div>
 
-              {/* Auto-populated meetup session notes */}
-              {(current.cansItems ?? []).filter(item => item.domain === 'Meetup Session').length > 0 && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 12 }}>
-                  <p className="cans-label" style={{ marginBottom: 4 }}>From Meetup Sessions</p>
-                  {(current.cansItems ?? [])
-                    .filter(item => item.domain === 'Meetup Session')
-                    .map(item => (
-                      <div key={item.id} className="cans-card">
-                        <div className="cans-header">
-                          <span className="cans-item-name">{item.item}</span>
-                          <span className="cans-rating" style={{ color: '#2563EB', background: '#2563EB18' }}>
-                            Meetup Note
-                          </span>
-                        </div>
-                        {item.caseNotes && (
-                          <div className="cans-notes">
-                            <p className="cans-text" style={{ whiteSpace: 'pre-wrap' }}>{item.caseNotes}</p>
-                          </div>
+            {!doc ? (
+              <div className="case-section">
+                <p className="empty-state">No documentation returned from the backend for this child yet.</p>
+              </div>
+            ) : (
+              <>
+                {/* ── Summary Section ── */}
+                <div className="case-section">
+                  <div className="case-section-header">
+                    <h3 className="case-section-title">Summary</h3>
+                    {!editingSummary && (
+                      <button
+                        className="btn btn--outline btn--sm"
+                        onClick={() => { setSummaryDraft(doc.summary ?? ''); setEditingSummary(true); }}
+                      >
+                        Edit
+                      </button>
+                    )}
+                  </div>
+                  {editingSummary ? (
+                    <>
+                      <textarea
+                        className="form-input notes-textarea"
+                        rows={4}
+                        placeholder="Write a brief overview of this youth's background, progress, and current situation..."
+                        value={summaryDraft}
+                        onChange={e => setSummaryDraft(e.target.value)}
+                      />
+                      <div className="modal-actions" style={{ marginTop: '0.75rem' }}>
+                        <button className="btn btn--outline btn--sm" onClick={() => setEditingSummary(false)}>Cancel</button>
+                        <button className="btn btn--primary btn--sm" onClick={handleSaveSummary}>Save Summary</button>
+                      </div>
+                    </>
+                  ) : (
+                    <p className="notes-display">
+                      {doc.summary || 'No summary yet. Click Edit to add one.'}
+                    </p>
+                  )}
+                </div>
+
+                {/* ── Personal Information ── */}
+                <div className="case-section">
+                  <h3 className="case-section-title">Personal Information</h3>
+                  <div className="doc-grid">
+                    {([
+                      ['Full Name',     'fullName'],
+                      ['NRIC (Last 4)', 'nricLast4'],
+                      ['Date of Birth', 'dateOfBirth', 'date'],
+                      ['Gender',        'gender'],
+                      ['Race',          'race'],
+                      ['Nationality',   'nationality'],
+                    ] as [string, keyof ChildDocumentation, string?][]).map(([label, key, type]) => (
+                      <div key={key} className="form-group">
+                        <label className="form-label">{label}</label>
+                        {editing ? (
+                          <input
+                            className="form-input"
+                            type={type ?? 'text'}
+                            value={String(draft?.[key] ?? '')}
+                            onChange={e => setDraft(d => d ? { ...d, [key]: e.target.value } : d)}
+                          />
+                        ) : (
+                          <p className="doc-field-val">{String(current?.[key] || '—')}</p>
                         )}
                       </div>
-                    ))
-                  }
+                    ))}
+                  </div>
                 </div>
-              )}
 
-              {/* Manual extra notes */}
-              {doc?.extraNotes ? (
-                <div className="cans-card">
-                  <div className="cans-header">
-                    <span className="cans-item-name">Social Worker Notes</span>
-                  </div>
-                  <div className="cans-notes">
-                    <p className="cans-text" style={{ whiteSpace: 'pre-wrap' }}>{doc.extraNotes}</p>
+                {/* ── Contact & School ── */}
+                <div className="case-section">
+                  <h3 className="case-section-title">Contact &amp; School</h3>
+                  <div className="doc-grid">
+                    {([
+                      ['Address',             'address'],
+                      ['Parent Contact',      'parentContact'],
+                      ['School',              'school'],
+                      ['Level / Year',        'level'],
+                      ['Hobbies / Interests', 'hobbies'],
+                    ] as [string, keyof ChildDocumentation][]).map(([label, key]) => (
+                      <div key={key} className="form-group">
+                        <label className="form-label">{label}</label>
+                        {editing ? (
+                          <input
+                            className="form-input"
+                            value={String(draft?.[key] ?? '')}
+                            onChange={e => setDraft(d => d ? { ...d, [key]: e.target.value } : d)}
+                          />
+                        ) : (
+                          <p className="doc-field-val">{String(current?.[key] || '—')}</p>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 </div>
-              ) : (
-                !showExtraInput && (current.cansItems ?? []).filter(i => i.domain === 'Meetup Session').length === 0 && (
-                  <p className="empty-state">No extra notes yet. Notes from meetup sessions will appear here automatically, or you can add your own above.</p>
-                )
-              )}
-            </div>
+
+                {/* ── Extra Notes ── */}
+                <div className="case-section">
+                  <div className="case-section-header">
+                    <h3 className="case-section-title">Extra Notes</h3>
+                    <button
+                      className="btn btn--outline btn--sm"
+                      onClick={() => setShowExtraInput(v => !v)}
+                    >
+                      {showExtraInput ? 'Cancel' : '+ Add Note'}
+                    </button>
+                  </div>
+                  <p style={{ fontSize: 13, color: 'var(--text-soft)', marginBottom: 10 }}>
+                    Additional observations, referral notes, or supplementary documentation from meetup sessions and chatbot interactions will appear here.
+                  </p>
+
+                  {showExtraInput && (
+                    <div style={{ marginBottom: 14 }}>
+                      <textarea
+                        className="form-input"
+                        rows={3}
+                        placeholder="Add an extra note or observation..."
+                        value={extraNoteInput}
+                        onChange={e => setExtraNoteInput(e.target.value)}
+                      />
+                      <div className="modal-actions" style={{ marginTop: 8 }}>
+                        <button className="btn btn--primary btn--sm" onClick={handleAddExtraNote}>Save Note</button>
+                      </div>
+                    </div>
+                  )}
+
+                  {(current?.cansItems ?? []).filter(item => item.domain === 'Meetup Session').length > 0 && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 12 }}>
+                      <p className="cans-label" style={{ marginBottom: 4 }}>From Meetup Sessions</p>
+                      {(current?.cansItems ?? [])
+                        .filter(item => item.domain === 'Meetup Session')
+                        .map(item => (
+                          <div key={item.id} className="cans-card">
+                            <div className="cans-header">
+                              <span className="cans-item-name">{item.item}</span>
+                              <span className="cans-rating" style={{ color: '#2563EB', background: '#2563EB18' }}>
+                                Meetup Note
+                              </span>
+                            </div>
+                            {item.caseNotes && (
+                              <div className="cans-notes">
+                                <p className="cans-text" style={{ whiteSpace: 'pre-wrap' }}>{item.caseNotes}</p>
+                              </div>
+                            )}
+                          </div>
+                        ))
+                      }
+                    </div>
+                  )}
+
+                  {doc.extraNotes ? (
+                    <div className="cans-card">
+                      <div className="cans-header">
+                        <span className="cans-item-name">Social Worker Notes</span>
+                      </div>
+                      <div className="cans-notes">
+                        <p className="cans-text" style={{ whiteSpace: 'pre-wrap' }}>{doc.extraNotes}</p>
+                      </div>
+                    </div>
+                  ) : (
+                    !showExtraInput && (current?.cansItems ?? []).filter(i => i.domain === 'Meetup Session').length === 0 && (
+                      <p className="empty-state">No extra notes yet. Notes from meetup sessions will appear here automatically, or you can add your own above.</p>
+                    )
+                  )}
+                </div>
+              </>
+            )}
           </>
         )}
       </div>
@@ -391,7 +408,9 @@ const YouthCatalog: React.FC = () => {
               {childFormError && <p className="form-error">{childFormError}</p>}
               <div className="modal-actions">
                 <button type="button" className="btn btn--outline" onClick={() => setShowCreateChild(false)}>Cancel</button>
-                <button type="submit" className="btn btn--primary">Create Account</button>
+                <button type="submit" className="btn btn--primary" disabled={creatingChild}>
+                  {creatingChild ? 'Creating…' : 'Create Account'}
+                </button>
               </div>
             </form>
           </div>

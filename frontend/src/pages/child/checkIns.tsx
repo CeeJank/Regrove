@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { useCases } from '../../contexts/CasesContext';
+import { apiFetch } from '../../services/api';
 
 const MOODS = [
   { value: 1 as const, emoji: '😄', label: 'Great' },
@@ -20,26 +20,44 @@ const WELLBEING_QUESTIONS = [
 
 const CheckIns: React.FC = () => {
   const { user } = useAuth();
-  const { getCaseByChildId, addCheckIn } = useCases();
   const [selectedMood, setSelectedMood] = useState<1|2|3|4|5|null>(null);
   const [events, setEvents] = useState('');
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!user || selectedMood === null) return;
-    const userCase = getCaseByChildId(user.id);
-    if (!userCase) return;
-    addCheckIn(userCase.id, {
-      id: `ci-${Date.now()}`, childId: user.id,
-      timestamp: new Date().toISOString(), mood: selectedMood, events,
-      q1_sleep: answers['q1_sleep'] ?? '',
-      q2_safe: answers['q2_safe'] ?? '',
-      q3_support: answers['q3_support'] ?? '',
-      q4_worry: answers['q4_worry'] ?? '',
-      q5_proud: answers['q5_proud'] ?? '',
-    });
-    setSubmitted(true);
+    setLoading(true);
+    setError('');
+    try {
+      await apiFetch(`/sdq/${user.id}`, {
+        method: 'POST',
+        body: JSON.stringify({
+          mood: selectedMood,
+          events,
+          q1_sleep: answers['q1_sleep'] ?? '',
+          q2_safe: answers['q2_safe'] ?? '',
+          q3_support: answers['q3_support'] ?? '',
+          q4_worry: answers['q4_worry'] ?? '',
+          q5_proud: answers['q5_proud'] ?? '',
+        }),
+      });
+      setSubmitted(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to submit. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const reset = () => {
+    setSubmitted(false);
+    setSelectedMood(null);
+    setEvents('');
+    setAnswers({});
+    setError('');
   };
 
   if (submitted) {
@@ -49,9 +67,7 @@ const CheckIns: React.FC = () => {
           <div className="checkin-success-emoji">🌟</div>
           <h2>Thanks for checking in!</h2>
           <p>Your feelings have been noted. Your social worker can see this to better support you.</p>
-          <button className="btn btn--primary" onClick={() => { setSubmitted(false); setSelectedMood(null); setEvents(''); setAnswers({}); }}>
-            Check in again
-          </button>
+          <button className="btn btn--primary" onClick={reset}>Check in again</button>
         </div>
       </div>
     );
@@ -96,8 +112,13 @@ const CheckIns: React.FC = () => {
             ))}
           </div>
 
-          <button className="btn btn--primary btn--lg checkin-submit" onClick={handleSubmit}>
-            Submit Check-In
+          {error && <p className="form-error">{error}</p>}
+          <button
+            className="btn btn--primary btn--lg checkin-submit"
+            onClick={handleSubmit}
+            disabled={loading}
+          >
+            {loading ? 'Submitting…' : 'Submit Check-In'}
           </button>
           <p className="checkin-privacy">🔒 Only your social worker can see your responses.</p>
         </div>

@@ -9,9 +9,10 @@ const ChildMessages: React.FC = () => {
   const { allWorkers } = useCases();
 
   const workerEntries = Object.entries(allWorkers);
-  const [activeWorkerId, setActiveWorkerId] = useState<string>(workerEntries[0]?.[0] ?? 'worker-1');
+  const [activeWorkerId, setActiveWorkerId] = useState<string>(workerEntries[0]?.[0] ?? '');
   const [input, setInput] = useState('');
   const [search, setSearch] = useState('');
+  const [error, setError] = useState('');
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const conversation = user ? getConversation(user.id, activeWorkerId) : [];
@@ -19,8 +20,13 @@ const ChildMessages: React.FC = () => {
 
   const handleSend = () => {
     if (!input.trim() || !user) return;
-    sendMessage({ senderId: user.id, receiverId: activeWorkerId, content: input.trim(), type: 'text' });
-    setInput('');
+    setError('');
+    try {
+      sendMessage({ senderId: user.id, receiverId: activeWorkerId, content: input.trim(), type: 'text' });
+      setInput('');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to send message.');
+    }
   };
   const handleKey = (e: React.KeyboardEvent) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } };
 
@@ -59,6 +65,7 @@ const ChildMessages: React.FC = () => {
         </div>
 
         <div className="chat-messages">
+          {error && <p className="form-error">{error}</p>}
           {conversation.length === 0 && <p className="empty-state">No messages yet. Say hello! 👋</p>}
           {conversation.map(msg => {
             const isMine = msg.senderId === user?.id;

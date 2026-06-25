@@ -19,6 +19,7 @@ const SWMessages: React.FC = () => {
   const [activeContactId, setActiveContactId] = useState<string | null>(contactIds[0] ?? null);
   const [input, setInput] = useState('');
   const [search, setSearch] = useState('');
+  const [error, setError] = useState('');
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const conversation = user && activeContactId ? getConversation(user.id, activeContactId) : [];
@@ -26,8 +27,13 @@ const SWMessages: React.FC = () => {
 
   const handleSend = () => {
     if (!input.trim() || !user || !activeContactId) return;
-    sendMessage({ senderId: user.id, receiverId: activeContactId, content: input.trim(), type: 'text' });
-    setInput('');
+    setError('');
+    try {
+      sendMessage({ senderId: user.id, receiverId: activeContactId, content: input.trim(), type: 'text' });
+      setInput('');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to send message.');
+    }
   };
   const handleKey = (e: React.KeyboardEvent) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } };
 
@@ -77,6 +83,7 @@ const SWMessages: React.FC = () => {
             </div>
 
             <div className="chat-messages">
+              {error && <p className="form-error">{error}</p>}
               {conversation.length === 0 && <p className="empty-state">No messages yet. Start the conversation.</p>}
               {conversation.map(msg => {
                 const isMine = msg.senderId === user?.id;

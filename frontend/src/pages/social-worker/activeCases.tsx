@@ -4,6 +4,7 @@ import { useCases } from '../../contexts/CasesContext';
 import { useDocumentation } from '../../contexts/DocumentationContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { RiskLevel, CANSItem } from '../../types';
+import { apiFetch } from '../../services/api';
 import ChildSearchBar from '../../components/shared/ChildSearchBar';
 
 const RISK_META: Record<RiskLevel, { bg: string; text: string; label: string }> = {
@@ -93,14 +94,18 @@ const ActiveCases: React.FC = () => {
     if (c) setSelected(c.id);
   };
 
-  const handleRemove = () => {
+  const handleRemove = async () => {
     if (!activeCase || !user) return;
     if (removeEmail !== user.email) { setRemoveError('Email does not match your account.'); return; }
-    removeCase(activeCase.id);
-    setSelected(cases.find(c => c.id !== activeCase.id)?.id ?? '');
-    setConfirmRemove(false);
-    setRemoveEmail('');
-    notify('Case removed.');
+    try {
+      await removeCase(activeCase.id);
+      setSelected(cases.find(c => c.id !== activeCase.id)?.id ?? '');
+      setConfirmRemove(false);
+      setRemoveEmail('');
+      notify('Case removed.');
+    } catch {
+      setRemoveError('Failed to remove case. Please try again.');
+    }
   };
 
   // ── CANS helpers ─────────────────────────────────────────────
@@ -115,40 +120,29 @@ const ActiveCases: React.FC = () => {
   };
 
   // ── Meetup helpers ────────────────────────────────────────────
-  const startSession = () => setSessionState('active');
+  const startSession = async () => {
+    if (!activeCase) return;
+    try {
+      await apiFetch(`/session/start/${activeCase.childId}`, { method: 'POST' });
+    } catch {}
+    setSessionState('active');
+  };
 
   const endSession = async () => {
+    if (!activeCase) return;
     setSessionState('ended');
     setProcessing(true);
-    const childName = activeCase ? allChildren[activeCase.childId]?.name ?? 'the child' : 'the child';
     try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
+      const { summary } = await apiFetch<{ summary: string }>(`/session/summarize/${activeCase.childId}`);
+      await apiFetch('/session/logcase', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-6',
-          max_tokens: 1000,
-          messages: [{
-            role: 'user',
-            content: `You are an AI assistant summarizing a meetup session between a social worker and their youth client named ${childName}. The session lasted ${fmt(elapsed)}. Generate a concise professional summary of a typical productive meetup session, including: mood observed, topics discussed, progress noted, and recommended next steps. Format it as a social worker's case note.`,
-          }],
-        }),
+        body: JSON.stringify({ childId: activeCase.childId, duration: elapsed, summary }),
       });
-      const data = await res.json();
-      const summary = data.content?.map((b: { text?: string }) => b.text ?? '').join('')
-        ?? 'Session completed. Manual notes required.';
       setAiNotes(summary);
-      if (activeCase) {
-        appendMeetupSummary(activeCase.childId, summary);
-        appendMeetupNotes(activeCase.childId, summary);
-      }
+      appendMeetupSummary(activeCase.childId, summary);
+      appendMeetupNotes(activeCase.childId, summary);
     } catch {
-      const fallback = `Meetup session completed (${fmt(elapsed)}). AI summary unavailable — please add manual notes.`;
-      setAiNotes(fallback);
-      if (activeCase) {
-        appendMeetupSummary(activeCase.childId, fallback);
-        appendMeetupNotes(activeCase.childId, fallback);
-      }
+      setAiNotes('');
     } finally {
       setProcessing(false);
     }

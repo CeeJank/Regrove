@@ -1,17 +1,19 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { UserRole } from '../types';
+import { UserRole, User } from '../types';
 import { useAuth } from '../contexts/AuthContext';
+import { apiFetch } from '../services/api';
 import bgImage from '../images/background/Bg1.png';
 
 const LoginPage: React.FC = () => {
   const [role, setRole] = useState<UserRole | null>(null);
   const [form, setForm] = useState({ username: '', email: '', password: '' });
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     if (!role) { setError('Please select your role.'); return; }
@@ -19,22 +21,24 @@ const LoginPage: React.FC = () => {
       setError('All fields are required.');
       return;
     }
-    // Mock login — replace with real API call
-    const mockUser = {
-      id: role === 'social_worker' ? 'worker-1' : 'child-1',
-      fullName: role === 'social_worker' ? 'Sarah Chen' : 'Alex Rivera',
-      username: form.username,
-      email: form.email,
-      role,
-      ...(role === 'child' ? { dateOfBirth: '2008-03-15', assignedWorkerId: 'worker-1', riskLevel: 'medium' as const } : { assignedChildIds: ['child-1', 'child-2', 'child-3'] }),
-    };
-    login(mockUser as any);
-    navigate(role === 'social_worker' ? '/sw/home' : '/child/home');
+    setLoading(true);
+    try {
+      const data = await apiFetch<{ token: string; user: User }>('/login', {
+        method: 'POST',
+        body: JSON.stringify({ username: form.username, email: form.email, password: form.password, role }),
+      });
+      login(data.user, data.token);
+      navigate(data.user.role === 'social_worker' ? '/sw/home' : '/child/home');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Login failed. Please check your credentials.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="auth-page"
-    style={{
+      style={{
         backgroundImage: `url(${bgImage})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
@@ -97,7 +101,9 @@ const LoginPage: React.FC = () => {
               />
             </div>
             {error && <p className="form-error">{error}</p>}
-            <button type="submit" className="btn btn--primary btn--full">Sign in</button>
+            <button type="submit" className="btn btn--primary btn--full" disabled={loading}>
+              {loading ? 'Signing in…' : 'Sign in'}
+            </button>
           </form>
         )}
 

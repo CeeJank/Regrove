@@ -1,0 +1,19 @@
+URL		...API endpoint called..
+
+Login 
+1. /login	POST/api/login
+2. /register	POST/api/register
+
+Social worker
+1. /sw/home	GET/api/active/	    GET/api/calendar/today/	GET/api/recents/
+2. /sw/calendar		GET/api/events/hub		GET/api/events/assigned-youth	POST/api/events		PATCH/api/events/:AppointmentId/status	DELETE/api/events/AppointmentId
+3. /sw/messages		
+4. /sw/active-cases	GET/api/recents (of 20)		GET/api/cans_case/:childId 	DELETE/api/cans_case/:childId		POST/api/session/start/:childId		POST/api/session/transcribe	POST/session/api-summarize	GET/api/session/summarize/:childId	POST/api/session/logcase
+5. sw/youth-catalogue	POST/api/child	GET/api/child/child:Id
+
+
+Child
+1. /child/home
+2. /child/check-In (SDQ) POST/api/sdq/:childId
+3. /child/messages /child/chatbot (conditional render based on office hours)
+4. /child/calendar	GET/api/events/hub (childId)
