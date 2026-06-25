@@ -1,62 +1,43 @@
 const express = require("express");
 const router = express.Router();
 
+// ─── Route modules ────────────────────────────────────────────────────────────
+// Each file owns a slice of the API surface. Adding a new feature area means
+// creating a new route file and mounting it here — nothing else changes.
 const sessionAudioRoutes = require("./session_start_audio");
-const dashboardRoutes = require("./dashboard");
+const dashboardRoutes    = require("./dashboard");
 const childProfileRoutes = require("./childProfile");
-<<<<<<< HEAD
-const eventRoutes = require("./events");
-=======
-const chatRoutes = require("./chat");
-const conversationRoutes = require("./conversationRoutes");
-const messageRoutes = require("./messageRoutes");
-const summaryRoutes = require("./summaryRoutes");
-const workerRoutes = require("./workerRoutes");
->>>>>>> 8df2b36 (Add AI chat box backend and testing frontend structure)
+const youthRoutes = require("./youth");
 const { startSession } = require("../controllers/startSession");
 const authenticate = require("../middleware/auth");
 
-// POST /api/session/start
-// Starts a worker session for an assigned youth.
-router.post("/session/start", authenticate, startSession);
+const { startSession } = require("../controllers/startSession");
 
-// /api/session/*
-// Audio/session utilities, including audio transcription.
+// Auth middleware used directly on the inline /session/start route below
+const { authenticateToken, requireWorkerOrAdmin } = require("../middleware/authMiddleware");
+
+// ─── Route registration ───────────────────────────────────────────────────────
+// Auth endpoints are public (login doesn't require a token by definition)
+router.use("/auth", authRoutes);
+
+// User management — worker creation is admin-only (enforced inside users.js)
+router.use("/users", userRoutes);
+
+// Session start is an inline route rather than a separate file;
+// only authenticated workers/admins can start sessions
+router.post("/session/start", authenticateToken, requireWorkerOrAdmin, startSession);
+
+// Session audio transcription (upload + transcribe) — see session_start_audio.js
 router.use("/session", sessionAudioRoutes);
 
-// /api/workers/handover
-// AI handover list for workers.
-router.use("/workers", workerRoutes);
-
-// /api/workers/children/recent
-// Dashboard data for a worker's recent youth profiles.
+// Worker dashboard data — protected inside dashboard.js
 router.use("/workers", dashboardRoutes);
 
-// /api/children/:childId
-// Detailed profile data for one youth.
+// Child profiles (legacy naming — maps to the child profile feature)
 router.use("/children", childProfileRoutes);
-<<<<<<< HEAD
-<<<<<<< HEAD
-router.use("/events", eventRoutes);
-=======
-=======
+router.use("/youth", youthRoutes);
 
-// /api/chat/*
-// Legacy chat route kept for backward compatibility.
->>>>>>> c026cf3 (Refactor AI chat flow and complete handover lifecycle)
-router.use("/chat", chatRoutes);
+// Youth profiles — all routes protected inside youth.js
+router.use("/youth", youthRoutes);
 
-// /api/conversations/*
-// Conversation/session list, details, and transcript endpoints.
-router.use("/conversations", conversationRoutes);
-
-// /api/messages/*
-// Shared youth/worker/AI message endpoints.
-router.use("/messages", messageRoutes);
-
-// /api/summaries/*
-// AI summary creation and summary history endpoints.
-router.use("/summaries", summaryRoutes);
-
->>>>>>> 8df2b36 (Add AI chat box backend and testing frontend structure)
 module.exports = router;

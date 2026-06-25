@@ -6,7 +6,6 @@ import { useEvents } from '../../contexts/EventsContext';
 import { RiskLevel } from '../../types';
 import ChildSearchBar from '../../components/shared/ChildSearchBar';
 
-<<<<<<< HEAD
 const RISK_COLORS: Record<RiskLevel, { bg: string; text: string; label: string; dot: string }> = {
   critical: { bg: '#F3E8FF', text: '#7C3AED', label: 'Critical',   dot: '#A855F7' },
   high:     { bg: '#FEE2E2', text: '#DC2626', label: 'High Risk',  dot: '#EF4444' },
@@ -23,13 +22,6 @@ const getSgGreeting = () => {
   if (sgHour >= 12 && sgHour < 17) return 'Good afternoon';
   if (sgHour >= 17 && sgHour < 21) return 'Good evening';
   return 'Good night';
-=======
-const RISK_COLORS: Record<RiskLevel, { bg: string; text: string; label: string }> = {
-  critical: { bg: '#EDE9FE', text: '#6D28D9', label: 'Critical' },
-  high:     { bg: '#FEE2E2', text: '#DC2626', label: 'High Risk' },
-  medium:   { bg: '#FEF9C3', text: '#CA8A04', label: 'Medium Risk' },
-  low:      { bg: '#DCFCE7', text: '#16A34A', label: 'Low Risk' },
->>>>>>> 110c6d7 (updated schema and seed sql to CJ's mocks and started dashboard MVC)
 };
 
 const SWHome: React.FC = () => {
@@ -86,7 +78,6 @@ const SWHome: React.FC = () => {
           const child = allChildren[c.childId];
           const risk  = RISK_COLORS[c.riskLevel];
           return (
-<<<<<<< HEAD
             <Link
               key={c.id}
               to="/sw/active-cases"
@@ -94,19 +85,9 @@ const SWHome: React.FC = () => {
               onClick={() => user && updateRecentInteraction(user.id, c.childId)}
             >
               <div className="case-avatar">{child?.name?.[0] ?? '?'}</div>
-=======
-            <Link key={c.id} to="/sw/active-cases" state={{ selectedId: c.id }} className="case-row">
-              {/* Avatar initial comes from the real name returned by the API */}
-              <div className="case-avatar">{c.name[0]}</div>
->>>>>>> a61d0e1 (added dashboard and child profile routes along with child-profile frontend logic and related components)
               <div className="case-info">
-<<<<<<< HEAD
                 <p className="case-name">{child?.name ?? c.childId}</p>
                 <p className="case-updated">Updated {new Date(c.lastUpdated).toLocaleDateString()}</p>
-=======
-                <p className="case-name">{c.name}</p>
-                <p className="case-updated">Updated {c.lastUpdated ? new Date(c.lastUpdated).toLocaleDateString() : '—'}</p>
->>>>>>> 110c6d7 (updated schema and seed sql to CJ's mocks and started dashboard MVC)
               </div>
               <span className="risk-badge" style={{ background: risk.bg, color: risk.text }}>
                 <span className="risk-dot" style={{ background: risk.dot }} />{risk.label}

@@ -1,79 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useMessages } from '../../contexts/MessagesContext';
-<<<<<<< HEAD
-import { useCases } from '../../contexts/CasesContext';
-=======
 
 const WORKER = { id: 'worker-1', name: 'Sarah Chen', avatar: 'S' };
->>>>>>> 5d704a3 (imported new frontend code and started rebuilding new backend routes)
 
 const ChildMessages: React.FC = () => {
   const { user } = useAuth();
   const { getConversation, sendMessage } = useMessages();
-<<<<<<< HEAD
-  const { allWorkers } = useCases();
-
-  const workerEntries = Object.entries(allWorkers);
-  const [activeWorkerId, setActiveWorkerId] = useState<string>(workerEntries[0]?.[0] ?? '');
-  const [input, setInput] = useState('');
-  const [search, setSearch] = useState('');
-  const [error, setError] = useState('');
-  const bottomRef = useRef<HTMLDivElement>(null);
-
-  const conversation = user ? getConversation(user.id, activeWorkerId) : [];
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [conversation]);
-
-  const handleSend = () => {
-    if (!input.trim() || !user) return;
-    setError('');
-    try {
-      sendMessage({ senderId: user.id, receiverId: activeWorkerId, content: input.trim(), type: 'text' });
-      setInput('');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unable to send message.');
-    }
-  };
-  const handleKey = (e: React.KeyboardEvent) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } };
-
-  const filtered = search
-    ? workerEntries.filter(([, w]) => w.name.toLowerCase().includes(search.toLowerCase()))
-    : workerEntries;
-
-  const activeWorker = allWorkers[activeWorkerId];
-
-  return (
-    <div className="messages-layout">
-      <aside className="contacts-panel">
-        <div className="contacts-header">
-          <h2>Messages</h2>
-          <input className="search-input-sm" placeholder="Search..." value={search} onChange={e => setSearch(e.target.value)} />
-        </div>
-        {filtered.map(([id, worker]) => (
-          <div key={id} className={`contact-row${activeWorkerId === id ? ' contact-row--active' : ''}`}
-            onClick={() => setActiveWorkerId(id)}>
-            <div className="contact-avatar" style={{ background: 'var(--primary)' }}>{worker.name[0]}</div>
-            <div className="contact-info">
-              <p className="contact-name">{worker.name}</p>
-              <p className="contact-preview">Social Worker</p>
-            </div>
-          </div>
-        ))}
-      </aside>
-
-      <div className="chat-area">
-        <div className="chat-header">
-          <div className="contact-avatar contact-avatar--lg" style={{ background: 'var(--primary)' }}>{activeWorker?.name?.[0] ?? 'S'}</div>
-          <div>
-            <p className="chat-contact-name">{activeWorker?.name ?? 'Social Worker'}</p>
-            <p className="chat-contact-sub">Your Social Worker</p>
-          </div>
-        </div>
-
-        <div className="chat-messages">
-          {error && <p className="form-error">{error}</p>}
-          {conversation.length === 0 && <p className="empty-state">No messages yet. Say hello! 👋</p>}
-=======
   const [input, setInput] = useState('');
   const [callType, setCallType] = useState<'voice' | 'video' | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -110,16 +43,11 @@ const ChildMessages: React.FC = () => {
           {conversation.length === 0 && (
             <p className="empty-state">No messages yet. Say hello to your social worker!</p>
           )}
->>>>>>> 5d704a3 (imported new frontend code and started rebuilding new backend routes)
           {conversation.map(msg => {
             const isMine = msg.senderId === user?.id;
             return (
               <div key={msg.id} className={`msg-row${isMine ? ' msg-row--mine' : ''}`}>
-<<<<<<< HEAD
-                {!isMine && <div className="contact-avatar contact-avatar--xs" style={{ background: 'var(--primary)' }}>{activeWorker?.name?.[0] ?? 'S'}</div>}
-=======
                 {!isMine && <div className="contact-avatar contact-avatar--xs">{WORKER.avatar}</div>}
->>>>>>> 5d704a3 (imported new frontend code and started rebuilding new backend routes)
                 <div className={`msg-bubble${isMine ? ' msg-bubble--mine' : ''}`}>
                   <p>{msg.content}</p>
                   <span className="msg-time">{new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
@@ -131,18 +59,6 @@ const ChildMessages: React.FC = () => {
         </div>
 
         <div className="chat-input-bar">
-<<<<<<< HEAD
-          <textarea className="chat-input" placeholder="Type a message..." value={input}
-            onChange={e => setInput(e.target.value)} onKeyDown={handleKey} rows={1} />
-          <button className="btn btn--primary" onClick={handleSend} disabled={!input.trim()}>Send</button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default ChildMessages;
-=======
           <textarea
             className="chat-input"
             placeholder="Type a message..."
@@ -168,4 +84,3 @@ export default ChildMessages;
   );
 };
 export default ChildMessages;
->>>>>>> 5d704a3 (imported new frontend code and started rebuilding new backend routes)

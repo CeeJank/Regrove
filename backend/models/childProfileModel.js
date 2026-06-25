@@ -1,6 +1,5 @@
 const pool = require("../config/db");
 
-<<<<<<< HEAD
 // Updates the youth's risk level on youth_profiles.
 // The frontend sends lowercase ('high') — we uppercase it for the DB constraint.
 exports.updateRiskLevel = async (childId, riskLevel) => {
@@ -100,14 +99,4 @@ exports.getChildProfileById = async (childId) => {
     },
     recentSessions: historyResult.rows,
   };
-=======
-// Model responsibility:
-// Demo/mock data source for one youth profile.
-// Replace this with PostgreSQL queries when this feature is connected to the full schema.
-
-// Finds one mock youth profile by child ID.
-exports.getChildProfileById = (childId) => {
-  const numericId = Number(childId);
-  return mockChildProfilesDb.find((item) => item.childId === numericId) || null;
->>>>>>> c026cf3 (Refactor AI chat flow and complete handover lifecycle)
 };
