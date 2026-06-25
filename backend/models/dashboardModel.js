@@ -1,6 +1,5 @@
 const pool = require("../config/db");
 
-<<<<<<< HEAD
 module.exports = {
   // Returns the worker's own profile — name and specialization.
   // Used by GET /api/workers/me to display the real name in the UI.
@@ -33,13 +32,13 @@ module.exports = {
         yp.category,
         TO_CHAR(latest_s.started_at, 'YYYY-MM-DD')   AS "lastUpdated",
         ais.summary_text                             AS "aiSummary",
-        
+
         -- 1. KEEP LATEST NOTE FOR DASHBOARD PREVIEW
         latest_preview_note.note_text                AS "latestNote",
-        
+
         -- 2. AGGREGATE ALL NOTES HISTORICALLY FOR THE ACTIVE-CASES DETAIL VIEW
         COALESCE(notes_agg.data, '[]'::json)         AS "notesHistoryJSON",
-        
+
         -- 3. AGGREGATE ALL RECENT CHECK-INS FOR TIMELINE WINDOWING
         COALESCE(check_ins_agg.data, '[]'::json)     AS "checkInsJSON"
       FROM public.worker_youth_assignments wya
@@ -52,7 +51,7 @@ module.exports = {
         LIMIT  1
       ) latest_s ON TRUE
       LEFT JOIN public.ai_summaries ais ON ais.session_id = latest_s.id
-      
+
       -- Single latest note preview for dashboard row
       LEFT JOIN LATERAL (
         SELECT note_text
@@ -77,7 +76,7 @@ module.exports = {
       LEFT JOIN LATERAL (
         SELECT json_agg(json_build_object(
           'id', s.id,
-          'mood', CASE 
+          'mood', CASE
                     WHEN ra.risk_level = 'LOW'      THEN 1
                     WHEN ra.risk_level = 'MEDIUM'   THEN 2
                     WHEN ra.risk_level = 'HIGH'     THEN 4
@@ -114,14 +113,5 @@ module.exports = {
     `;
     const { rows } = await pool.query(query, [workerId]);
     return rows[0];
-  },
-=======
-// Model responsibility:
-// Demo/mock data source for worker dashboard cards.
-// Replace this with PostgreSQL queries when dashboard data is moved fully into the database.
-
-// Returns up to five recent youth profiles assigned to one worker.
-exports.getRecentChildrenForWorker = (workerId) => {
-  return mockRecentChildrenDb.filter((item) => item.workerId === workerId).slice(0, 5);
->>>>>>> c026cf3 (Refactor AI chat flow and complete handover lifecycle)
-};
+  }
+}
