@@ -1,22 +1,30 @@
+<<<<<<< HEAD
 const { getChildProfileById } = require('../models/childProfileModel');
+=======
+const { getChildProfileById } = require("../models/childProfileModel");
+>>>>>>> 5dd5147 (debugs and connected db to routes)
 
-exports.getChildProfileById = (req, res) => {
+exports.getChildProfileById = async (req, res) => {
   try {
     const childId = req.params.childId;
 
     if (!childId) {
-      return res.status(400).json({ message: 'No child ID provided' });
+      return res.status(400).json({ message: "No child ID provided" });
     }
 
-    const data = getChildProfileById(childId);
+    // Await the database aggregation execution
+    const data = await getChildProfileById(childId);
 
     if (!data) {
-      return res.status(404).json({ message: 'Child profile not found' });
+      return res.status(404).json({ message: "Child profile not found" });
     }
 
+    // Returns the data matching the frontend's expected format
     return res.status(200).json(data);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Failed to load child profile' });
+    console.error("Controller Error in getChildProfileById:", error);
+    return res
+      .status(500)
+      .json({ message: "Failed to load child profile due to a server error" });
   }
 };

@@ -1,10 +1,10 @@
 const { getRecentChildrenForWorker } = require('../models/dashboardModel');
 
-exports.getRecentChildrenForWorker = (req, res) => {
+exports.getRecentChildrenForWorker = async (req, res) => {
   try {
     const workerId = req.user.workerId;
-    
-    const data = getRecentChildrenForWorker(workerId);
+    // Await the database query results for recent children associated with the worker
+    const data = await getRecentChildrenForWorker(workerId);
 
     return res.status(200).json({
       workerId,

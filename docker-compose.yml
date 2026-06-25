@@ -41,6 +41,8 @@ services:
       - POSTGRES_PASSWORD=${DB_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./backend/database/schema.sql:/docker-entrypoint-initdb.d/1-schema.sql
+      - ./backend/database/seed.sql:/docker-entrypoint-initdb.d/2-seed.sql
 
 volumes:
   postgres_data:

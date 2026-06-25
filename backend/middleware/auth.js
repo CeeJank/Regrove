@@ -1,8 +1,12 @@
 const jwt = require("jsonwebtoken");
 
 const authenticate = (req, res, next) => {
+<<<<<<< HEAD
   const token = req.headers.authorization?.split(' ')[1];
   if (!token) return res.status(401).json({ message: 'No token provided' });
+=======
+  const token = req.headers.authorization?.split(" ")[1];
+>>>>>>> 5dd5147 (debugs and connected db to routes)
 
   try {
     if (!token || token === "null" || token === "undefined" || token === "mock-token") {
