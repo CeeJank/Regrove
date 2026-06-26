@@ -46,7 +46,10 @@ const ActiveCases: React.FC = () => {
     return ai - bi;
   }).slice(0, 10);
 
-  const [selected,     setSelected]     = useState(sortedCases[0]?.id ?? '');
+  // selectedChildId can be any child from the DB — not just case children.
+  // guestChildName holds the name when the child has no active case record.
+  const [selectedChildId, setSelectedChildId] = useState(sortedCases[0]?.childId ?? '');
+  const [guestChildName,  setGuestChildName]  = useState('');
   const [editingNotes, setEditingNotes] = useState(false);
   const [noteDraft,    setNoteDraft]    = useState('');
   const [notification, setNotification] = useState('');
@@ -94,18 +97,24 @@ const ActiveCases: React.FC = () => {
   const fmt = (s: number) =>
     `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
 
-  const activeCase  = cases.find(c => c.id === selected);
+  const activeCase  = cases.find(c => c.childId === selectedChildId) ?? null;
   const selectedDoc = activeCase ? docs.find(d => d.childId === activeCase.childId) : undefined;
+  // Display name: prefer case record → allChildren lookup → guestChildName from search
+  const displayName = activeCase
+    ? (allChildren[activeCase.childId]?.name ?? activeCase.childId)
+    : (allChildren[selectedChildId]?.name ?? (guestChildName || selectedChildId));
 
   const notify = (msg: string) => {
     setNotification(msg);
     setTimeout(() => setNotification(''), 3000);
   };
 
-  const handleSearch = (childId: string) => {
+  const handleSearch = (childId: string, childName: string) => {
     if (user) updateRecentInteraction(user.id, childId);
-    const c = cases.find(cs => cs.childId === childId);
-    if (c) setSelected(c.id);
+    setSelectedChildId(childId);
+    setGuestChildName(childName);
+    resetSession();
+    setEditingNotes(false);
   };
 
   const handleRemove = async () => {
@@ -113,7 +122,8 @@ const ActiveCases: React.FC = () => {
     if (removeEmail !== user.email) { setRemoveError('Email does not match your account.'); return; }
     try {
       await removeCase(activeCase.id);
-      setSelected(cases.find(c => c.id !== activeCase.id)?.id ?? '');
+      const next = cases.find(c => c.childId !== activeCase.childId);
+      setSelectedChildId(next?.childId ?? '');
       setConfirmRemove(false);
       setRemoveEmail('');
       notify('Case removed.');
@@ -169,9 +179,10 @@ const ActiveCases: React.FC = () => {
   }, []);
 
   const startSession = async () => {
-    if (!activeCase) return;
+    if (!selectedChildId) return;
+    const childIdForSession = activeCase?.childId ?? selectedChildId;
     try {
-      const session = await apiFetch<{ sessionId: string }>(`/session/start/${activeCase.childId}`, { method: 'POST' });
+      const session = await apiFetch<{ sessionId: string }>(`/session/start/${childIdForSession}`, { method: 'POST' });
       setCurrentSessionId(session.sessionId);
     } catch {}
 
@@ -190,7 +201,8 @@ const ActiveCases: React.FC = () => {
   };
 
   const endSession = async () => {
-    if (!activeCase) return;
+    if (!selectedChildId) return;
+    const childIdForSession = activeCase?.childId ?? selectedChildId;
     setSessionState('ended');
     setProcessing(true);
 
@@ -208,14 +220,14 @@ const ActiveCases: React.FC = () => {
     }
 
     try {
-      const { summary } = await apiFetch<{ summary: string }>(`/session/summarize/${activeCase.childId}`);
+      const { summary } = await apiFetch<{ summary: string }>(`/session/summarize/${childIdForSession}`);
       await apiFetch('/session/logcase', {
         method: 'POST',
-        body: JSON.stringify({ childId: activeCase.childId, duration: elapsed, summary }),
+        body: JSON.stringify({ childId: childIdForSession, duration: elapsed, summary }),
       });
       setAiNotes(summary);
-      appendMeetupSummary(activeCase.childId, summary);
-      appendMeetupNotes(activeCase.childId, summary);
+      appendMeetupSummary(childIdForSession, summary);
+      appendMeetupNotes(childIdForSession, summary);
     } catch {
       setAiNotes('');
     } finally {
@@ -285,9 +297,10 @@ const ActiveCases: React.FC = () => {
             return (
               <div
                 key={c.id}
-                className={`cases-row${selected === c.id ? ' cases-row--active' : ''}`}
+                className={`cases-row${selectedChildId === c.childId ? ' cases-row--active' : ''}`}
                 onClick={() => {
-                  setSelected(c.id);
+                  setSelectedChildId(c.childId);
+                  setGuestChildName('');
                   setEditingNotes(false);
                   resetSession();
                   if (user) updateRecentInteraction(user.id, c.childId);
@@ -313,12 +326,71 @@ const ActiveCases: React.FC = () => {
       <div className="case-detail">
         {notification && <div className="alert alert--info">{notification}</div>}
 
-        {!activeCase ? (
+        {!selectedChildId ? (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 400, gap: 12 }}>
             <p className="empty-state">Select a case from the sidebar.</p>
           </div>
+        ) : !activeCase ? (
+          /* ── Guest child: not an active case yet, session-only view ── */
+          <div>
+            <div className="page-header">
+              <div>
+                <h1 className="page-title">{displayName}</h1>
+                <p className="page-sub" style={{ color: '#92400E' }}>Not an active case — session only</p>
+              </div>
+            </div>
+            <div className="case-section">
+              <h3 className="case-section-title">Meetup Session</h3>
+              {sessionState === 'idle' && (
+                <button className="btn btn--primary" onClick={() => setSessionState('confirm')}>
+                  🎥 Start Meetup Session
+                </button>
+              )}
+              {sessionState === 'confirm' && (
+                <div className="meetup-confirm-card" style={{ margin: 0, maxWidth: '100%' }}>
+                  <div className="meetup-icon">🎥</div>
+                  <h2>Start Meetup with {displayName}?</h2>
+                  <p>AI will record and summarize the session.</p>
+                  <div className="meetup-actions">
+                    <button className="btn btn--outline" onClick={resetSession}>No, Cancel</button>
+                    <button className="btn btn--primary" onClick={startSession}>Yes, Start Session</button>
+                  </div>
+                </div>
+              )}
+              {sessionState === 'active' && (
+                <div className="meetup-active-card" style={{ margin: 0, maxWidth: '100%' }}>
+                  <div className="meetup-pulse" />
+                  <h2>Session in Progress</h2>
+                  <p className="meetup-with">With: <strong>{displayName}</strong></p>
+                  <div className="meetup-timer">{fmt(elapsed)}</div>
+                  <p className="meetup-ai-note">🤖 AI is recording and will auto-summarize when the session ends.</p>
+                  <button className="btn btn--danger btn--lg" onClick={endSession}>End Meetup Session</button>
+                </div>
+              )}
+              {sessionState === 'ended' && (
+                <div className="meetup-ended-card" style={{ margin: 0, maxWidth: '100%' }}>
+                  <div className="meetup-ended-icon">✅</div>
+                  <h2>Session Ended</h2>
+                  <p>Duration: <strong>{fmt(elapsed)}</strong> · With: <strong>{displayName}</strong></p>
+                  {processing ? (
+                    <div className="meetup-processing">
+                      <div className="typing-indicator" style={{ justifyContent: 'center' }}><span /><span /><span /></div>
+                      <p>AI is generating session summary...</p>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="meetup-summary-box">
+                        <p className="cans-label">AI Session Summary</p>
+                        <p style={{ fontSize: 14, lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{aiNotes}</p>
+                      </div>
+                      <button className="btn btn--primary" style={{ marginTop: 16 }} onClick={resetSession}>Start Another Session</button>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
         ) : (() => {
-          const child = allChildren[activeCase.childId];
           const cansItems = selectedDoc?.cansItems ?? [];
 
           return (
@@ -326,7 +398,7 @@ const ActiveCases: React.FC = () => {
               {/* Header */}
               <div className="page-header">
                 <div>
-                  <h1 className="page-title">{child?.name ?? activeCase.childId}</h1>
+                  <h1 className="page-title">{displayName}</h1>
                   <p className="page-sub">Case ID: <span className="mono">{activeCase.id}</span></p>
                 </div>
                 <button className="btn btn--danger" onClick={() => setConfirmRemove(true)}>Remove Case</button>
@@ -476,7 +548,7 @@ const ActiveCases: React.FC = () => {
                     </button>
                     <button
                       className="btn btn--outline"
-                      onClick={() => navigate(`/sw/child-catalog?child=${activeCase.childId}`)}
+                      onClick={() => navigate(`/sw/child-catalog?child=${activeCase?.childId ?? selectedChildId}`)}
                     >
                       📖 Visit Catalog
                     </button>
@@ -486,7 +558,7 @@ const ActiveCases: React.FC = () => {
                 {sessionState === 'confirm' && (
                   <div className="meetup-confirm-card" style={{ margin: 0, maxWidth: '100%' }}>
                     <div className="meetup-icon">🎥</div>
-                    <h2>Start Meetup with {child?.name}?</h2>
+                    <h2>Start Meetup with {displayName}?</h2>
                     <p>AI will record and summarize the session. The summary will be sent to Active Cases and Child Catalog automatically.</p>
                     <div className="meetup-actions">
                       <button className="btn btn--outline" onClick={resetSession}>No, Cancel</button>
@@ -499,7 +571,7 @@ const ActiveCases: React.FC = () => {
                   <div className="meetup-active-card" style={{ margin: 0, maxWidth: '100%' }}>
                     <div className="meetup-pulse" />
                     <h2>Session in Progress</h2>
-                    <p className="meetup-with">With: <strong>{child?.name}</strong></p>
+                    <p className="meetup-with">With: <strong>{displayName}</strong></p>
                     <div className="meetup-timer">{fmt(elapsed)}</div>
                     <p className="meetup-ai-note">🤖 AI is recording and will auto-summarize when the session ends.</p>
                     <button className="btn btn--danger btn--lg" onClick={endSession}>End Meetup Session</button>
@@ -510,7 +582,7 @@ const ActiveCases: React.FC = () => {
                   <div className="meetup-ended-card" style={{ margin: 0, maxWidth: '100%' }}>
                     <div className="meetup-ended-icon">✅</div>
                     <h2>Session Ended</h2>
-                    <p>Duration: <strong>{fmt(elapsed)}</strong> · With: <strong>{child?.name}</strong></p>
+                    <p>Duration: <strong>{fmt(elapsed)}</strong> · With: <strong>{displayName}</strong></p>
                     {processing ? (
                       <div className="meetup-processing">
                         <div className="typing-indicator" style={{ justifyContent: 'center' }}>
@@ -549,7 +621,7 @@ const ActiveCases: React.FC = () => {
                           <button className="btn btn--primary" onClick={resetSession}>Start Another Session</button>
                           <button
                             className="btn btn--outline"
-                            onClick={() => navigate(`/sw/child-catalog?child=${activeCase.childId}`)}
+                            onClick={() => navigate(`/sw/child-catalog?child=${activeCase?.childId ?? selectedChildId}`)}
                           >
                             📖 Visit Catalog
                           </button>

@@ -85,7 +85,8 @@ const AppRoutes = () => {
       <Route path="/sw/messages"      element={<ProtectedSWRoute><SWMessages /></ProtectedSWRoute>} />
       <Route path="/sw/referrals"     element={<ProtectedSWRoute><SWReferrals /></ProtectedSWRoute>} />
       <Route path="/sw/active-cases"  element={<ProtectedSWRoute><ActiveCases /></ProtectedSWRoute>} />
-      <Route path="/sw/child-catalog" element={<ProtectedSWRoute><ChildCatalog /></ProtectedSWRoute>} />
+      <Route path="/sw/child-catalog"        element={<ProtectedSWRoute><ChildCatalog /></ProtectedSWRoute>} />
+      <Route path="/sw/child-catalog/create" element={<ProtectedSWStandaloneRoute><CreateYouthProfilePage /></ProtectedSWStandaloneRoute>} />
 
       {/* Social Worker — standalone full-screen pages (no sidebar) */}
       <Route path="/dashboard"                       element={<ProtectedSWStandaloneRoute><DashboardPage /></ProtectedSWStandaloneRoute>} />
@@ -94,8 +95,8 @@ const AppRoutes = () => {
       <Route path="/chat/:conversationId"            element={<ProtectedSWStandaloneRoute><YouthChatPage /></ProtectedSWStandaloneRoute>} />
       <Route path="/child"                           element={<ProtectedSWStandaloneRoute><ChildCataloguePage /></ProtectedSWStandaloneRoute>} />
       <Route path="/child/create"                    element={<ProtectedSWStandaloneRoute><CreateChildProfilePage /></ProtectedSWStandaloneRoute>} />
-      <Route path="/youth"        element={<ProtectedSWRoute><YouthCataloguePage /></ProtectedSWRoute>} />
-      <Route path="/youth/create" element={<ProtectedSWRoute><CreateYouthProfilePage /></ProtectedSWRoute>} />
+      <Route path="/youth"        element={<Navigate to="/sw/child-catalog" replace />} />
+      <Route path="/youth/create" element={<Navigate to="/sw/child-catalog/create" replace />} />
 
       {/* Child — with ChildLayout sidebar */}
       <Route path="/child/home"                       element={<ProtectedChildRoute><ChildHome /></ProtectedChildRoute>} />

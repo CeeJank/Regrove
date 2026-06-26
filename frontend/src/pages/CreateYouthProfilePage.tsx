@@ -59,8 +59,7 @@ export default function CreateYouthProfilePage() {
     try {
       await createYouth(payload);
       setSuccess("Youth profile created. Redirecting…");
-      // Brief delay so the worker can see the success message before being moved away
-      setTimeout(() => navigate("/youth"), 1500);
+      setTimeout(() => navigate("/sw/child-catalog"), 1500);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
@@ -75,7 +74,7 @@ export default function CreateYouthProfilePage() {
         <h1>Create Youth Profile</h1>
 
         <nav className="nav-links" style={{ marginBottom: 20 }}>
-          <Link to="/youth" className="secondary-btn">← Back to Catalogue</Link>
+          <Link to="/sw/child-catalog" className="secondary-btn">← Back to Catalogue</Link>
         </nav>
 
         {error   && <p className="error-box">{error}</p>}

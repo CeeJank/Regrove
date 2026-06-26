@@ -40,7 +40,7 @@ export default function YouthCataloguePage() {
           <h1 className="page-title">Youth Catalogue</h1>
           <p className="page-sub">All youth profiles under your care.</p>
         </div>
-        <Link to="/youth/create" className="btn btn--primary btn--sm">+ New Profile</Link>
+        <Link to="/sw/child-catalog/create" className="btn btn--primary btn--sm">+ New Profile</Link>
       </div>
 
       <div className="stat-cards">
@@ -148,7 +148,7 @@ export default function YouthCataloguePage() {
                     </td>
                     <td>
                       <Link
-                        to={`/youth/${y.id}`}
+                        to={`/sw/child-catalog?child=${y.id}`}
                         className="btn btn--outline btn--sm"
                       >
                         View

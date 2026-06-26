@@ -16,7 +16,7 @@ const navItems = [
   { to: '/sw/calendar',     label: 'Calendar',     icon: CalendarIcon },
   { to: '/sw/messages',     label: 'Messages',     icon: ChatBubbleLeftRightIcon },
   { to: '/sw/active-cases', label: 'Active Cases', icon: ClipboardDocumentListIcon },
-  { to: '/youth',           label: 'Youth',        icon: UsersIcon },
+  { to: '/sw/child-catalog', label: 'Youth',        icon: UsersIcon },
 ];
 
 export const SocialWorkerLayout = ({ children }: { children: ReactNode }) => {

@@ -75,7 +75,7 @@ const SWHome: React.FC = () => {
 
       <div className="section-header">
         <h2 className="section-title" style={{ marginBottom: 0 }}>Recent Sessions</h2>
-        <Link to="/youth" className="btn btn--outline btn--sm">View all youth</Link>
+        <Link to="/sw/child-catalog" className="btn btn--outline btn--sm">View all youth</Link>
       </div>
 
       {error && <p className="page-sub" style={{ color: '#B91C1C', marginBottom: 16 }}>{error}</p>}
