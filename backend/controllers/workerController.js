@@ -22,7 +22,20 @@ async function markHandoverReviewed(req, res) {
   return res.status(200).json(response);
 }
 
+// GET /api/workers/recent-youth
+// Returns the most recent distinct youth this worker has had sessions with,
+// ordered by their last session time descending.
+async function getRecentYouth(req, res) {
+  const workerId = req.user.workerId;
+  if (!workerId) {
+    return res.status(403).json({ message: 'Worker profile not found for authenticated user' });
+  }
+  const youth = await workerModel.getRecentYouthForWorker(workerId);
+  return res.status(200).json(youth);
+}
+
 module.exports = {
   getHandoverConversations,
   markHandoverReviewed,
+  getRecentYouth,
 };

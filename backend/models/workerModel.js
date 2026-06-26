@@ -110,8 +110,37 @@ async function markSessionReviewed(conversationId) {
   return result.rows[0] || null;
 }
 
+// Returns the most recent distinct youth a worker has had a session with,
+// ordered by the time of their last session descending.
+// Uses DISTINCT ON so each youth appears only once even if there are many sessions.
+async function getRecentYouthForWorker(workerId, limit = 10) {
+  const { rows } = await pool.query(
+    `SELECT
+       yp.id                   AS "youthId",
+       yp.full_name            AS "name",
+       yp.latest_risk_level    AS "riskLevel",
+       yp.status,
+       yp.age,
+       latest.last_session_at  AS "lastSessionAt"
+     FROM (
+       SELECT DISTINCT ON (youth_id)
+         youth_id,
+         started_at AS last_session_at
+       FROM sessions
+       WHERE worker_id = $1
+       ORDER BY youth_id, started_at DESC
+     ) latest
+     JOIN youth_profiles yp ON yp.id = latest.youth_id
+     ORDER BY latest.last_session_at DESC
+     LIMIT $2`,
+    [workerId, limit]
+  );
+  return rows;
+}
+
 module.exports = {
   findHandoverConversations,
   markHandoverReportsReviewed,
   markSessionReviewed,
+  getRecentYouthForWorker,
 };

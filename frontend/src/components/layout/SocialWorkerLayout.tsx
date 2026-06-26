@@ -6,18 +6,17 @@ import {
   ChartBarIcon,
   CalendarIcon,
   ChatBubbleLeftRightIcon,
-  ArrowsRightLeftIcon,
   ClipboardDocumentListIcon,
   ArrowRightOnRectangleIcon,
+  UsersIcon,
 } from '@heroicons/react/24/outline';
 
 const navItems = [
-  { to: '/sw/home', label: 'Home', icon: HomeIcon },
-  { to: '/sw/dashboard', label: 'Dashboard', icon: ChartBarIcon },
-  { to: '/sw/calendar', label: 'Calendar', icon: CalendarIcon },
-  { to: '/sw/messages', label: 'Messages', icon: ChatBubbleLeftRightIcon },
-  { to: '/sw/referrals', label: 'Referrals', icon: ArrowsRightLeftIcon },
+  { to: '/sw/home',         label: 'Home',         icon: HomeIcon },
+  { to: '/sw/calendar',     label: 'Calendar',     icon: CalendarIcon },
+  { to: '/sw/messages',     label: 'Messages',     icon: ChatBubbleLeftRightIcon },
   { to: '/sw/active-cases', label: 'Active Cases', icon: ClipboardDocumentListIcon },
+  { to: '/youth',           label: 'Youth',        icon: UsersIcon },
 ];
 
 export const SocialWorkerLayout = ({ children }: { children: ReactNode }) => {

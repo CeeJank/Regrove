@@ -2,7 +2,7 @@
 // and handles 401/403 session expiry globally.
 import { apiFetch } from "./apiFetch";
 
-const API_BASE = "http://localhost:5000/api";
+const API_BASE = "/api";
 
 // Shape of a youth profile as returned by the API.
 // Matches the columns selected in youthModel.getAllYouth / getYouthById.
@@ -49,6 +49,25 @@ export async function fetchYouthById(id: number): Promise<YouthProfile> {
   if (!response.ok) throw new Error("Failed to fetch youth profile");
   const json = await response.json();
   return json.data;
+}
+
+// ─── fetchRecentYouthForWorker ────────────────────────────────────────────────
+// GET /api/workers/recent-youth
+// Returns the most recent distinct youth the authenticated worker has seen,
+// ordered by their last session time descending.
+export interface RecentYouthEntry {
+  youthId: number;
+  name: string;
+  riskLevel: string;
+  status: string;
+  age: number | null;
+  lastSessionAt: string;
+}
+
+export async function fetchRecentYouthForWorker(): Promise<RecentYouthEntry[]> {
+  const response = await apiFetch(`${API_BASE}/workers/recent-youth`);
+  if (!response.ok) throw new Error("Failed to fetch recent youth");
+  return response.json();
 }
 
 // ─── createYouth ─────────────────────────────────────────────────────────────

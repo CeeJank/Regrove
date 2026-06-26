@@ -1,5 +1,6 @@
 import os
 import tempfile
+import threading
 import uuid
 
 import requests
@@ -8,76 +9,91 @@ from flask import Flask, jsonify, request
 
 app = Flask(__name__)
 
-# choose model
-model_size = "large-v2"
+# Use "small" on CPU — loads in ~30 s and is fast enough for session audio.
+# Switch to "large-v2" only when a GPU is available (set WHISPER_MODEL env var).
+model_size = os.environ.get("WHISPER_MODEL", "small")
 
 try:
     model = WhisperModel(model_size, device="cuda", compute_type="float16")
-    print("Loaded Whisper on CUDA")
+    print(f"Loaded Whisper ({model_size}) on CUDA")
 except Exception as e:
     print(f"CUDA unavailable ({e}), falling back to CPU")
     model = WhisperModel(model_size, device="cpu", compute_type="int8")
 
-# temp endpoint for receiving from express
+
+def _transcribe_and_callback(tmp_path: str, ext: str, session_id: str) -> None:
+    """
+    Runs in a background thread so the HTTP response is returned immediately.
+    Transcribes the audio file, then POSTs the markdown transcript to Express.
+    Cleans up temp files whether transcription succeeds or fails.
+    """
+    md_path = f"{uuid.uuid4()}.md"
+    try:
+        segments, _info = model.transcribe(tmp_path, beam_size=5)
+        print(f"Transcribing session {session_id!r}…")
+
+        with open(md_path, "w") as f:
+            for segment in segments:
+                f.write(f"[{segment.start:.2f}s] {segment.text}\n")
+
+        with open(md_path, "r") as f:
+            markdown = f.read()
+
+        express_url = os.environ.get("EXPRESS_API_URL", "http://localhost:5000")
+        requests.post(
+            f"{express_url}/api/session/transcript-callback",
+            json={"session_id": session_id, "transcription": markdown},
+            timeout=30,
+        )
+        print(f"Transcript for session {session_id!r} sent to Express.")
+    except Exception as exc:
+        print(f"Transcription error for session {session_id!r}: {exc}")
+    finally:
+        if os.path.exists(tmp_path):
+            os.unlink(tmp_path)
+        if os.path.exists(md_path):
+            os.unlink(md_path)
+
+
 @app.route("/transcribe", methods=["POST"])
-def processRecording():
-    # To receive the recording, JSON objects cannot be used because they only store text
-    # FormData() is to be used on expressjs side
-    # fetch(`${process.env.PYTHON_API_URL}/recording`, {
-    # method: 'POST',
-    # body: formData
-    # })
+def process_recording():
     recording = request.files.get("audio")
     session_id = request.form.get("session_id", "")
 
     if recording is None:
-        return jsonify({"Error": "no recording received!!"}), 400
+        return jsonify({"error": "No audio file received"}), 400
 
-    # Check for not .mp4
-    if not recording.filename or (
-        not recording.filename.endswith(".mp3")
-        and not recording.filename.endswith(".webm")
+    if not recording.filename or not (
+        recording.filename.endswith(".mp3") or recording.filename.endswith(".webm")
     ):
-        return jsonify({"Error": "Recording file must be .mp3 or .webm"}), 400
+        return jsonify({"error": "Audio file must be .mp3 or .webm"}), 400
 
-    # store the extension of the recording mp4/webm
     ext = os.path.splitext(recording.filename)[1]
 
-    # uuid to generate tag for >1 requests, so the same file doesn't get overwritten
-    md_path = f"{uuid.uuid4()}.md"
-
-    # Temp file to store the recording because faster-whisper works under FFmpeg(C code) so it needs a real path
-    with tempfile.NamedTemporaryFile(
-        suffix=ext, delete=False
-    ) as tmp:  # don't delete the file after closing
+    # Save to a named temp file — faster-whisper needs a real filesystem path
+    # (it calls FFmpeg under the hood which can't read from a file descriptor).
+    tmp = tempfile.NamedTemporaryFile(suffix=ext, delete=False)
+    try:
         recording.save(tmp)
         tmp_path = tmp.name
-    try:
-        segments, info = model.transcribe(tmp_path, beam_size=5)
-
-        print("Recording is now being processed")
-
-        # create the md file for transcript
-        with open(md_path, "w") as f:
-            for segment in segments:
-                f.write(f"[{segment.start}s] {segment.text}\n")
-    # unlink the file
     finally:
-        os.unlink(tmp_path)
+        tmp.close()
 
-    # read the file to transmit
-    with open(md_path, "r") as f:
-        markdown = f.read()
-
-    os.unlink(md_path)
-
-    # Post transcript back to Express for CANS summarisation
-    express_url = os.environ.get("EXPRESS_API_URL", "http://localhost:5000")
-    requests.post(
-        f"{express_url}/api/session/transcript-callback",
-        json={"session_id": session_id, "transcription": markdown},
+    # Kick off transcription in the background and return 202 immediately
+    # so the browser doesn't time out waiting for a slow CPU transcription.
+    thread = threading.Thread(
+        target=_transcribe_and_callback,
+        args=(tmp_path, ext, session_id),
+        daemon=True,
     )
-    return jsonify({"status": "Processing the transcript"}), 202
+    thread.start()
+
+    return jsonify({"status": "accepted", "session_id": session_id}), 202
+
+
+@app.route("/health", methods=["GET"])
+def health():
+    return jsonify({"status": "ok", "model": model_size}), 200
 
 
 if __name__ == "__main__":

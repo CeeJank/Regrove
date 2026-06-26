@@ -3,7 +3,7 @@
 // Components and other services should never read localStorage directly —
 // they should call these functions so the storage keys stay in one place.
 
-const API_BASE  = "http://localhost:5000/api";
+const API_BASE = "/api";
 const TOKEN_KEY = "token"; // localStorage key for the JWT
 const USER_KEY  = "user";  // localStorage key for the serialised AuthUser object
 

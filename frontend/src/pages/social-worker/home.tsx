@@ -1,96 +1,102 @@
-import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { useCases } from '../../contexts/CasesContext';
-import { useEvents } from '../../contexts/EventsContext';
-import { RiskLevel } from '../../types';
-import ChildSearchBar from '../../components/shared/ChildSearchBar';
+import { fetchRecentYouthForWorker, type RecentYouthEntry } from '../../services/youthService';
 
-const RISK_COLORS: Record<RiskLevel, { bg: string; text: string; label: string; dot: string }> = {
-  critical: { bg: '#F3E8FF', text: '#7C3AED', label: 'Critical',   dot: '#A855F7' },
-  high:     { bg: '#FEE2E2', text: '#DC2626', label: 'High Risk',  dot: '#EF4444' },
-  medium:   { bg: '#FEF9C3', text: '#CA8A04', label: 'Medium Risk',dot: '#EAB308' },
-  low:      { bg: '#DCFCE7', text: '#16A34A', label: 'Low Risk',   dot: '#22C55E' },
+const RISK_META: Record<string, { bg: string; text: string; dot: string; label: string }> = {
+  CRITICAL: { bg: '#F5F3FF', text: '#6D28D9', dot: '#7C3AED', label: 'Critical' },
+  HIGH:     { bg: '#FEF2F2', text: '#B91C1C', dot: '#EF4444', label: 'High'     },
+  MEDIUM:   { bg: '#FEFCE8', text: '#92400E', dot: '#EAB308', label: 'Medium'   },
+  LOW:      { bg: '#F0FDF4', text: '#166534', dot: '#22C55E', label: 'Low'      },
 };
 
-/** Returns a Singapore-time-aware greeting */
 const getSgGreeting = () => {
-  const sgHour = new Date(
+  const hour = new Date(
     new Date().toLocaleString('en-US', { timeZone: 'Asia/Singapore' })
   ).getHours();
-  if (sgHour >= 5  && sgHour < 12) return 'Good morning';
-  if (sgHour >= 12 && sgHour < 17) return 'Good afternoon';
-  if (sgHour >= 17 && sgHour < 21) return 'Good evening';
+  if (hour >= 5  && hour < 12) return 'Good morning';
+  if (hour >= 12 && hour < 17) return 'Good afternoon';
+  if (hour >= 17 && hour < 21) return 'Good evening';
   return 'Good night';
+};
+
+const timeAgo = (iso: string) => {
+  const diff  = Date.now() - new Date(iso).getTime();
+  const mins  = Math.floor(diff / 60_000);
+  const hours = Math.floor(diff / 3_600_000);
+  const days  = Math.floor(diff / 86_400_000);
+  if (mins  < 1)  return 'just now';
+  if (mins  < 60) return `${mins}m ago`;
+  if (hours < 24) return `${hours}h ago`;
+  if (days  < 7)  return `${days}d ago`;
+  return new Date(iso).toLocaleDateString('en-SG', { day: 'numeric', month: 'short' });
 };
 
 const SWHome: React.FC = () => {
   const { user } = useAuth();
-  const { cases, allChildren, getRecentChildren, updateRecentInteraction } = useCases();
-  const { getEventsForUser } = useEvents();
-  const navigate = useNavigate();
+  const [recentYouth, setRecentYouth] = useState<RecentYouthEntry[]>([]);
+  const [loading, setLoading]         = useState(true);
+  const [error, setError]             = useState('');
 
-  const greeting = getSgGreeting();
+  useEffect(() => {
+    fetchRecentYouthForWorker()
+      .then(setRecentYouth)
+      .catch(() => setError('Could not load recent sessions.'))
+      .finally(() => setLoading(false));
+  }, []);
 
-  const recentChildIds = user ? getRecentChildren(user.id).slice(0, 10) : [];
-  const recentCases = recentChildIds
-    .map(cid => cases.find(c => c.childId === cid))
-    .filter(Boolean) as typeof cases;
-
-  const confirmedEvents = user
-    ? getEventsForUser(user.id).filter(e => e.status === 'confirmed')
-    : [];
-
-  const handleChildSelect = (childId: string) => {
-    if (user) updateRecentInteraction(user.id, childId);
-    navigate('/sw/active-cases');
-  };
+  const activeCount    = recentYouth.filter(y => y.status === 'ACTIVE').length;
+  const highRiskCount  = recentYouth.filter(y => y.riskLevel === 'HIGH' || y.riskLevel === 'CRITICAL').length;
 
   return (
     <div className="page-content">
-      {/* ── Header: greeting only, no "Full Dashboard" button ── */}
       <div className="page-header">
         <div>
-          <h1 className="page-title">{greeting}, {user?.fullName?.split(' ')[0]} 👋</h1>
+          <h1 className="page-title">{getSgGreeting()}, {user?.fullName?.split(' ')[0]} 👋</h1>
           <p className="page-sub">Here is a snapshot of your caseload today.</p>
         </div>
+        <Link to="/sw/active-cases" className="btn btn--primary btn--sm">Open Cases</Link>
       </div>
 
-      {/* ── Stat cards: Confirmed Events only (no active cases count, no pending referrals) ── */}
       <div className="stat-cards">
+        <div className="stat-card stat-card--green">
+          <p className="stat-label">Recent Sessions</p>
+          <p className="stat-value">{loading ? '—' : recentYouth.length}</p>
+        </div>
+        <div className="stat-card stat-card--red">
+          <p className="stat-label">High / Critical</p>
+          <p className="stat-value">{loading ? '—' : highRiskCount}</p>
+        </div>
         <div className="stat-card">
-          <p className="stat-label">Confirmed Events</p>
-          <p className="stat-value">{confirmedEvents.length}</p>
+          <p className="stat-label">Active Cases</p>
+          <p className="stat-value">{loading ? '—' : activeCount}</p>
         </div>
       </div>
 
-      {/* ── Recent Cases (no "View all" link, search still present) ── */}
-      <div className="section-header" style={{ marginBottom: 12 }}>
-        <h2 className="section-title" style={{ marginBottom: 0 }}>Recent Cases</h2>
+      <div className="section-header">
+        <h2 className="section-title" style={{ marginBottom: 0 }}>Recent Sessions</h2>
+        <Link to="/youth" className="btn btn--outline btn--sm">View all youth</Link>
       </div>
-      <ChildSearchBar onSelect={handleChildSelect} placeholder="Search for any child..." />
 
-      <div className="case-list" style={{ marginTop: 14 }}>
-        {recentCases.length === 0 && (
-          <p className="empty-state">No recent interactions yet. Search above to find a child.</p>
+      {error && <p className="page-sub" style={{ color: '#B91C1C', marginBottom: 16 }}>{error}</p>}
+
+      <div className="case-list">
+        {loading && <p className="empty-state">Loading recent sessions…</p>}
+        {!loading && !error && recentYouth.length === 0 && (
+          <p className="empty-state">No sessions recorded yet.</p>
         )}
-        {recentCases.slice(0, 10).map(c => {
-          const child = allChildren[c.childId];
-          const risk  = RISK_COLORS[c.riskLevel];
+        {recentYouth.map(y => {
+          const risk = RISK_META[y.riskLevel] ?? RISK_META.LOW;
           return (
-            <Link
-              key={c.id}
-              to="/sw/active-cases"
-              className="case-row"
-              onClick={() => user && updateRecentInteraction(user.id, c.childId)}
-            >
-              <div className="case-avatar">{child?.name?.[0] ?? '?'}</div>
+            <Link key={y.youthId} to="/sw/active-cases" className="case-row">
+              <div className="case-avatar">{y.name[0]}</div>
               <div className="case-info">
-                <p className="case-name">{child?.name ?? c.childId}</p>
-                <p className="case-updated">Updated {new Date(c.lastUpdated).toLocaleDateString()}</p>
+                <p className="case-name">{y.name}</p>
+                <p className="case-updated">Last session {timeAgo(y.lastSessionAt)}</p>
               </div>
               <span className="risk-badge" style={{ background: risk.bg, color: risk.text }}>
-                <span className="risk-dot" style={{ background: risk.dot }} />{risk.label}
+                <span className="risk-dot" style={{ background: risk.dot }} />
+                {risk.label}
               </span>
             </Link>
           );
@@ -99,9 +105,8 @@ const SWHome: React.FC = () => {
 
       <div className="quick-nav">
         {[
-          { to: '/sw/calendar', emoji: '📅', label: 'Calendar' },
-          { to: '/sw/messages', emoji: '💬', label: 'Messages' },
-          { to: '/sw/referrals', emoji: '🔄', label: 'Referrals' },
+          { to: '/sw/calendar',     emoji: '📅', label: 'Calendar'     },
+          { to: '/sw/messages',     emoji: '💬', label: 'Messages'     },
           { to: '/sw/active-cases', emoji: '📋', label: 'Active Cases' },
         ].map(item => (
           <Link key={item.to} to={item.to} className="quick-nav-card">

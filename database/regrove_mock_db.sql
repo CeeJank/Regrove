@@ -21,14 +21,24 @@ INSERT INTO public.users (id, email, password_hash, role, is_active, created_at,
 (12, 'youth7@dell.org.sg', '$2b$12$mockhashplaceholder12', 'youth', TRUE, '2026-05-02 10:00:00', '2026-05-02 10:00:00'),
 (13, 'youth8@dell.org.sg', '$2b$12$mockhashplaceholder13', 'youth', TRUE, '2026-04-05 10:00:00', '2026-04-05 10:00:00'),
 (14, 'youth9@dell.org.sg', '$2b$12$mockhashplaceholder14', 'youth', TRUE, '2026-03-26 10:00:00', '2026-03-26 10:00:00'),
-(15, 'youth10@dell.org.sg', '$2b$12$mockhashplaceholder15', 'youth', TRUE, '2026-04-29 10:00:00', '2026-04-29 10:00:00');
+(15, 'youth10@dell.org.sg', '$2b$12$mockhashplaceholder15', 'youth', TRUE, '2026-04-29 10:00:00', '2026-04-29 10:00:00'),
+-- ── Test accounts with real bcrypt hashes ──────────────────────────────────
+(16, 'sarah.lim@regrove.sg',   '$2a$10$sT.RypguYtoLa4SVsalDaOw/al9S17x1J/6jsrswUkmBfR4COLPTW', 'worker', TRUE, '2026-06-01 08:00:00', '2026-06-01 08:00:00'),
+(17, 'james.ng@regrove.sg',    '$2a$10$KGEa8M7cUIFq3Mc5RpAvb.2WhWn6VWhkrdSNC701Z3F.dNALTc/MG', 'worker', TRUE, '2026-06-01 08:00:00', '2026-06-01 08:00:00'),
+(18, 'priya.nair@regrove.sg',  '$2a$10$XtuhRXDRCj82PWz4fbNkx.OtJIU4x.y.VVIMzgpcGtEK8t0WOQQuG', 'worker', TRUE, '2026-06-01 08:00:00', '2026-06-01 08:00:00'),
+(19, 'ethan.chen@youth.sg',    '$2a$10$73YNqOuqAIlfVtIwWsdcROhcS3.xK526ttqXu6WUgGwDAle7PbcRe', 'youth',  TRUE, '2026-06-01 08:00:00', '2026-06-01 08:00:00'),
+(20, 'maya.ravi@youth.sg',     '$2a$10$lDS4evrEX4tM1hmfev2Mx.aiauS7/GwHiiuC13AV/LuljOJC4l.MS', 'youth',  TRUE, '2026-06-01 08:00:00', '2026-06-01 08:00:00'),
+(21, 'zach.tan@youth.sg',      '$2a$10$Hn.BtF202LHRizMgeCyW2ebyMpiBa6cWdlwJBKTJ9G1Hl4g1vurWC', 'youth',  TRUE, '2026-06-01 08:00:00', '2026-06-01 08:00:00');
 
 INSERT INTO public.worker_profiles (id, user_id, full_name, specialization, bio, created_at, updated_at) VALUES
 (5, 1, 'Regrove Admin', 'Platform Oversight', 'Development admin account with a mock caseload for local testing and UI verification.', '2025-05-12 10:00:00', '2025-05-12 10:00:00'),
 (1, 2, 'Kumar Abdullah', 'Youth Counselling', 'Youth Counselling caseworker supporting youth and families.', '2026-02-02 10:00:00', '2026-02-02 10:00:00'),
 (2, 3, 'Devi Raj', 'Family Casework', 'Family Casework caseworker supporting youth and families.', '2025-09-05 10:00:00', '2025-09-05 10:00:00'),
 (3, 4, 'Jonathan Abdullah', 'Crisis Intervention', 'Crisis Intervention caseworker supporting youth and families.', '2025-05-29 10:00:00', '2025-05-29 10:00:00'),
-(4, 5, 'Devi Tan', 'Educational Support', 'Educational Support caseworker supporting youth and families.', '2025-06-21 10:00:00', '2025-06-21 10:00:00');
+(4, 5, 'Devi Tan', 'Educational Support', 'Educational Support caseworker supporting youth and families.', '2025-06-21 10:00:00', '2025-06-21 10:00:00'),
+(6, 16, 'Sarah Lim',   'Youth Counselling',   'Experienced youth counsellor focused on school transitions and family conflict.', '2026-06-01 08:00:00', '2026-06-01 08:00:00'),
+(7, 17, 'James Ng',    'Crisis Intervention',  'Crisis caseworker with a background in high-risk youth and community referrals.', '2026-06-01 08:00:00', '2026-06-01 08:00:00'),
+(8, 18, 'Priya Nair',  'Family Casework',      'Family-focused caseworker supporting caregivers and youth in at-risk households.', '2026-06-01 08:00:00', '2026-06-01 08:00:00');
 
 INSERT INTO public.youth_profiles (id, user_id, full_name, status, age, school, interests, category, latest_risk_level, created_at, updated_at) VALUES
 (1, 6, 'Koh Jun Wei', 'ACTIVE', 14, 'Crest Secondary School', 'floorball', 'Intensive Support', 'HIGH', '2026-03-18 10:00:00', '2026-03-18 10:00:00'),
@@ -40,7 +50,10 @@ INSERT INTO public.youth_profiles (id, user_id, full_name, status, age, school, 
 (7, 12, 'Wong Hui Min', 'ACTIVE', 13, 'NorthLight School', 'art and drawing', 'General Casework', 'LOW', '2026-05-02 10:00:00', '2026-05-02 10:00:00'),
 (8, 13, 'Arun Subramaniam', 'ACTIVE', 17, 'Westwood Secondary School', 'playing the guitar', 'Family Support', 'MEDIUM', '2026-04-05 10:00:00', '2026-04-05 10:00:00'),
 (9, 14, 'Nurul Huda binte Yusof', 'ACTIVE', 14, 'Crest Secondary School', 'mobile gaming', 'Intensive Support', 'CRITICAL', '2026-03-26 10:00:00', '2026-03-26 10:00:00'),
-(10, 15, 'Ong Yu Xuan', 'ACTIVE', 13, 'NorthLight School', 'K-pop dance', 'General Casework', 'LOW', '2026-04-29 10:00:00', '2026-04-29 10:00:00');
+(10, 15, 'Ong Yu Xuan', 'ACTIVE', 13, 'NorthLight School', 'K-pop dance', 'General Casework', 'LOW', '2026-04-29 10:00:00', '2026-04-29 10:00:00'),
+(11, 19, 'Ethan Chen',  'ACTIVE', 15, 'Bukit Panjang Govt High', 'basketball, streetwear', 'General Casework',   'LOW',    '2026-06-01 08:00:00', '2026-06-01 08:00:00'),
+(12, 20, 'Maya Ravi',   'ACTIVE', 16, 'Jurong Secondary School', 'journaling, poetry',    'Family Support',     'MEDIUM', '2026-06-01 08:00:00', '2026-06-01 08:00:00'),
+(13, 21, 'Zach Tan',    'ACTIVE', 14, 'Crest Secondary School',  'gaming, skateboarding', 'Intensive Support',  'HIGH',   '2026-06-01 08:00:00', '2026-06-01 08:00:00');
 
 INSERT INTO public.worker_youth_assignments (id, worker_id, youth_id, assigned_at) VALUES
 (1, 1, 2, '2026-02-13 10:00:00'),
@@ -57,7 +70,14 @@ INSERT INTO public.worker_youth_assignments (id, worker_id, youth_id, assigned_a
 (12, 3, 9, '2026-04-02 10:00:00'),
 (13, 5, 1, '2026-06-01 09:00:00'),
 (14, 5, 6, '2026-06-01 09:05:00'),
-(15, 5, 9, '2026-06-01 09:10:00');
+(15, 5, 9, '2026-06-01 09:10:00'),
+-- ── Assignments for new workers ────────────────────────────────────────────
+(16, 6, 11, '2026-06-01 08:30:00'),
+(17, 6, 12, '2026-06-01 08:35:00'),
+(18, 7, 13, '2026-06-01 08:30:00'),
+(19, 7, 11, '2026-06-01 08:35:00'),
+(20, 8, 12, '2026-06-01 08:30:00'),
+(21, 8, 13, '2026-06-01 08:35:00');
 
 INSERT INTO public.sessions (id, youth_id, worker_id, session_type, status, started_at, ended_at) VALUES
 (1, 1, 4, 'WORKER_CHAT', 'ESCALATED', '2026-06-14 07:00:00', '2026-06-14 07:25:00'),
@@ -73,7 +93,14 @@ INSERT INTO public.sessions (id, youth_id, worker_id, session_type, status, star
 (11, 10, 4, 'WORKER_CHAT', 'COMPLETED', '2026-06-08 06:00:00', '2026-06-08 06:12:00'),
 (12, 1, 5, 'WORKER_CHAT', 'COMPLETED', '2026-06-22 10:00:00', '2026-06-22 10:28:00'),
 (13, 6, 5, 'WORKER_CHAT', 'COMPLETED', '2026-06-23 14:00:00', '2026-06-23 14:24:00'),
-(14, 9, 5, 'WORKER_CHAT', 'COMPLETED', '2026-06-24 16:00:00', '2026-06-24 16:36:00');
+(14, 9, 5, 'WORKER_CHAT', 'COMPLETED', '2026-06-24 16:00:00', '2026-06-24 16:36:00'),
+-- ── Sessions for new workers ───────────────────────────────────────────────
+(15, 11, 6, 'WORKER_CHAT', 'COMPLETED', '2026-06-24 10:00:00', '2026-06-24 10:20:00'),
+(16, 12, 6, 'WORKER_CHAT', 'COMPLETED', '2026-06-23 11:00:00', '2026-06-23 11:18:00'),
+(17, 13, 7, 'WORKER_CHAT', 'COMPLETED', '2026-06-25 09:00:00', '2026-06-25 09:22:00'),
+(18, 11, 7, 'WORKER_CHAT', 'COMPLETED', '2026-06-22 14:00:00', '2026-06-22 14:15:00'),
+(19, 12, 8, 'WORKER_CHAT', 'COMPLETED', '2026-06-25 15:00:00', '2026-06-25 15:20:00'),
+(20, 13, 8, 'WORKER_CHAT', 'COMPLETED', '2026-06-24 09:30:00', '2026-06-24 09:50:00');
 
 INSERT INTO public.messages (id, session_id, sender_type, message_text, created_at) VALUES
 (1, 1, 'YOUTH', 'I don''t really know how to say this but I haven''t been okay', '2026-06-14 07:00:00'),
@@ -109,7 +136,19 @@ INSERT INTO public.messages (id, session_id, sender_type, message_text, created_
 (31, 13, 'YOUTH', 'Things at home are still tense, but drawing has helped me calm down a bit.', '2026-06-23 14:00:00'),
 (32, 13, 'WORKER', 'That''s useful to know. Let''s keep using drawing as a coping support while we plan your next family follow-up.', '2026-06-23 14:24:00'),
 (33, 14, 'YOUTH', 'I still feel stressed, but it''s not as bad as last week and my sister has been checking on me.', '2026-06-24 16:00:00'),
-(34, 14, 'WORKER', 'That''s a meaningful improvement. We''ll keep the safety plan active and stay in close contact this week.', '2026-06-24 16:36:00');
+(34, 14, 'WORKER', 'That''s a meaningful improvement. We''ll keep the safety plan active and stay in close contact this week.', '2026-06-24 16:36:00'),
+(35, 15, 'YOUTH',  'Hi, things have been okay at school this week. Basketball tryouts went well.',                           '2026-06-24 10:00:00'),
+(36, 15, 'WORKER', 'That''s great to hear, Ethan! Making the team would be a big confidence boost. Let''s keep that momentum going.', '2026-06-24 10:20:00'),
+(37, 16, 'YOUTH',  'I wrote a poem about how I''ve been feeling. It helped a lot actually.',                                '2026-06-23 11:00:00'),
+(38, 16, 'WORKER', 'I''m really glad journaling is working for you, Maya. Would you be open to sharing it with me next session?', '2026-06-23 11:18:00'),
+(39, 17, 'YOUTH',  'I skipped school again on Monday. I don''t know how to explain it — I just couldn''t get out of bed.',   '2026-06-25 09:00:00'),
+(40, 17, 'WORKER', 'Thank you for being honest about that, Zach. Can you tell me a bit more about what Monday morning felt like?', '2026-06-25 09:22:00'),
+(41, 18, 'YOUTH',  'The basketball tryouts didn''t go the way I hoped. I''m alright though.',                                '2026-06-22 14:00:00'),
+(42, 18, 'WORKER', 'That''s disappointing, but I respect how you''re handling it. What helped you stay steady today?',        '2026-06-22 14:15:00'),
+(43, 19, 'YOUTH',  'My mum and I had a big argument last night. I left the house for a few hours.',                           '2026-06-25 15:00:00'),
+(44, 19, 'WORKER', 'I''m glad you came back and that you''re here today. Let''s talk through what happened and how we can plan for next time.', '2026-06-25 15:20:00'),
+(45, 20, 'YOUTH',  'Things are rough. My dad hasn''t come home in three days and my mum won''t talk about it.',              '2026-06-24 09:30:00'),
+(46, 20, 'WORKER', 'That sounds like a lot of uncertainty to sit with. You''re not alone in this — let''s figure out what support looks like right now.', '2026-06-24 09:50:00');
 
 INSERT INTO public.ai_summaries (id, session_id, summary_text, created_at) VALUES
 (1, 1, 'Jun Wei disclosed self-harm behaviour during session. CW acknowledged disclosure and flagged for escalation and safety planning.', '2026-06-14 07:29:00'),
@@ -125,7 +164,13 @@ INSERT INTO public.ai_summaries (id, session_id, summary_text, created_at) VALUE
 (11, 11, 'Yu Xuan shared a positive update about K-pop dance. No concerns raised; rapport remains good.', '2026-06-08 06:14:00'),
 (12, 12, 'Jun Wei reported school and family stress. Worker prioritized de-escalation, stress mapping, and a follow-up check-in later this week.', '2026-06-22 10:31:00'),
 (13, 13, 'Ong Yu Xuan described continued family tension but identified drawing as a stabilising coping tool. Worker recommended ongoing monitoring and caregiver follow-up.', '2026-06-23 14:28:00'),
-(14, 14, 'Nurul Huda reported modest improvement after crisis follow-up, with sibling support acting as a protective factor. Safety plan remains active.', '2026-06-24 16:41:00');
+(14, 14, 'Nurul Huda reported modest improvement after crisis follow-up, with sibling support acting as a protective factor. Safety plan remains active.', '2026-06-24 16:41:00'),
+(15, 15, 'Ethan Chen shared a positive update about basketball tryouts. Engagement is strong and no concerns were raised.', '2026-06-24 10:22:00'),
+(16, 16, 'Maya Ravi described using poetry as an emotional outlet. CW encouraged continued use and proposed sharing in next session.', '2026-06-23 11:20:00'),
+(17, 17, 'Zach Tan disclosed school avoidance. CW explored emotional and environmental barriers; follow-up with school counsellor recommended.', '2026-06-25 09:25:00'),
+(18, 18, 'Ethan Chen reported missing basketball tryout expectations but maintained emotional stability. CW validated resilience.', '2026-06-22 14:17:00'),
+(19, 19, 'Maya Ravi disclosed a significant family conflict involving leaving home. CW discussed safety and de-escalation strategies.', '2026-06-25 15:22:00'),
+(20, 20, 'Zach Tan reported paternal absence over multiple days and maternal withdrawal. Significant family instability noted.', '2026-06-24 09:52:00');
 
 INSERT INTO public.risk_assessments (id, session_id, risk_level, risk_score, reasoning, created_at) VALUES
 (1, 1, 'HIGH', 5.9, 'Self-harm behaviour disclosed; elevated risk, requires follow-up and safety planning.', '2026-06-14 07:29:00'),
@@ -141,7 +186,13 @@ INSERT INTO public.risk_assessments (id, session_id, risk_level, risk_score, rea
 (11, 11, 'LOW', 2.25, 'No risk indicators present in this session.', '2026-06-08 06:14:00'),
 (12, 12, 'HIGH', 5.4, 'Stress elevated due to school and family conflict; no new self-harm disclosure, but sustained close follow-up is needed.', '2026-06-22 10:31:00'),
 (13, 13, 'MEDIUM', 4.1, 'Family tension persists, though coping strategies are present and engaged.', '2026-06-23 14:28:00'),
-(14, 14, 'HIGH', 6.7, 'Recent crisis remains clinically significant even with modest improvement and protective factors.', '2026-06-24 16:41:00');
+(14, 14, 'HIGH', 6.7, 'Recent crisis remains clinically significant even with modest improvement and protective factors.', '2026-06-24 16:41:00'),
+(15, 15, 'LOW',    2.1, 'No risk indicators present; positive session with clear protective activity.', '2026-06-24 10:22:00'),
+(16, 16, 'LOW',    1.9, 'No risk indicators present; youth using healthy emotional outlets.', '2026-06-23 11:20:00'),
+(17, 17, 'HIGH',   5.8, 'School avoidance indicates significant disengagement; emotional barriers need structured follow-up.', '2026-06-25 09:25:00'),
+(18, 18, 'LOW',    2.3, 'Youth managing disappointment well; no concerns noted.', '2026-06-22 14:17:00'),
+(19, 19, 'MEDIUM', 4.2, 'Family conflict and brief absence from home noted; coping plan discussed; monitoring recommended.', '2026-06-25 15:22:00'),
+(20, 20, 'HIGH',   5.6, 'Significant family instability with parental absence; heightened monitoring and family support referral recommended.', '2026-06-24 09:52:00');
 
 INSERT INTO public.escalations (id, session_id, youth_id, escalation_type, description, status, created_at) VALUES
 (1, 1, 1, 'SELF_HARM', 'Self Harm disclosed by Jun Wei during session; flagged for care team review.', 'IN_PROGRESS', '2026-06-14 07:38:00'),
